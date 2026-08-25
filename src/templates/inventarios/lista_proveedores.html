@@ -1,0 +1,133 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Lista de proveedores{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_proveedores.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+    
+    <!-- HEADER -->
+    <div class="module-header">
+        <h2>Proveedores</h2>
+        
+        <div class="window-actions">
+            <a href="{{ url_for('inventarios.inicio') }}" class="btn-close-pro" title="Volver al menú">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- CONTROLES -->
+    <div class="controls">
+        
+        <!-- BUSCADOR SOLO POR NOMBRE -->
+        <input type="text" id="input-busqueda-proveedor" class="search" placeholder="Buscar proveedor por nombre..." autocomplete="off">
+        
+        <a class="btn-new" href="{{ url_for('inventarios.crear_proveedor') }}">+ Nuevo proveedor</a>
+        
+        <!-- FILTRO ESTADO -->
+        <div class="filters">
+            <select id="filtro-estado-proveedor">
+                <option value="">Todos los Estados</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+            </select>
+        </div>
+        
+    </div>
+    
+    <!-- SUBHEADER -->
+    <div class="table-header">
+        <span>No.</span>
+        <span>Razón Social / Nombre</span>
+        <span>NIT</span>
+        <span>Dirección</span>
+        <span>Teléfono</span>
+        <span>Correo Electrónico</span>
+        <span>Contacto</span>
+        <span>Estado</span>
+        <span style="text-align: center;">Acciones</span>
+    </div>
+    
+    <!-- TABLA -->
+    <div class="table-body" id="tabla-proveedores-body">
+
+        {% for p in proveedores %}
+        <div class="row fila-proveedor"
+             data-nombre="{{ (p.nombre or '') | lower }}"
+             data-estado="{{ 'activo' if p.estado else 'inactivo' }}">
+            <span>{{ loop.index }}</span>
+            <strong style="color: #ffffff;">{{ p.nombre }}</strong>
+            <span style="color: #60a5fa; font-weight: 500;">{{ p.nit }}</span>
+            <span>{{ p.direccion or '-' }}</span>
+            <span>{{ p.telefono or '-' }}</span>
+            <span style="color: #38bdf8;">{{ p.correo or '-' }}</span>
+            <span>{{ p.nombre_contacto or '-' }}</span>
+            <span class="{{ 'activo' if p.estado else 'inactivo' }}">
+                {{ 'Activo' if p.estado else 'Inactivo' }}
+            </span>
+
+            <div class="actions">
+                <a class="btn-action edit" href="{{ url_for('inventarios.editar_proveedor', id=p.id) }}" title="Editar proveedor">✎</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="row" style="display: flex; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No hay proveedores registrados actualmente.</span>
+        </div>
+        {% endfor %}
+
+        <div id="sin-resultados-proveedores" class="row" style="display: none; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No se encontraron proveedores que coincidan con la búsqueda.</span>
+        </div>
+        
+    </div>
+    
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputBusqueda = document.getElementById("input-busqueda-proveedor");
+    const filtroEstado = document.getElementById("filtro-estado-proveedor");
+    const filas = document.querySelectorAll(".fila-proveedor");
+    const sinResultados = document.getElementById("sin-resultados-proveedores");
+
+    function filtrarProveedores() {
+        const textoNombre = inputBusqueda.value.trim().toLowerCase();
+        const estado = filtroEstado ? filtroEstado.value.trim().toLowerCase() : "";
+
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const nombre = fila.getAttribute("data-nombre") || "";
+            const fEstado = fila.getAttribute("data-estado") || "";
+
+            // Búsqueda estricta SOLO por nombre
+            const coincideNombre = !textoNombre || nombre.includes(textoNombre);
+            const coincideEstado = !estado || fEstado === estado;
+
+            if (coincideNombre && coincideEstado) {
+                fila.style.display = "grid";
+                visibles++;
+            } else {
+                fila.style.display = "none";
+            }
+        });
+
+        if (sinResultados) {
+            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+        }
+    }
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarProveedores);
+    if (filtroEstado) filtroEstado.addEventListener("change", filtrarProveedores);
+});
+</script>
+{% endblock %}

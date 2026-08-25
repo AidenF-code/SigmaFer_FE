@@ -1,0 +1,351 @@
+/* =========================================================
+SIGMAFER - LISTADO DE ROLES
+   ========================================================= */
+
+.module-card {
+    width: 100%;
+    margin: 0;
+
+    background: #121625;
+
+    border: 1px solid #252b3d;
+    border-radius: 16px;
+
+    overflow: hidden;
+
+    color: #f1f3f8;
+}
+
+
+/* =========================================================
+HEADER
+   ========================================================= */
+
+.module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 80px;
+    padding: 0 20px;
+
+    background: #151a2c;
+
+    border-bottom: 1px solid #252b3d;
+}
+
+.module-header h2 {
+    margin: 0;
+
+    color: #f5f6fa;
+
+    font-size: 24px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   BOTÓN CERRAR
+   ========================================================= */
+
+.window-actions {
+    display: flex;
+    align-items: center;
+}
+
+.btn-close-pro {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 42px;
+    height: 42px;
+
+    background: #252a3b;
+
+    color: #f07b72;
+
+    border-radius: 10px;
+
+    text-decoration: none;
+
+    transition: all 0.2s ease;
+}
+
+.btn-close-pro:hover {
+    background: #303649;
+
+    color: #ff8a80;
+
+    transform: translateY(-1px);
+}
+
+.btn-close-pro i {
+    font-size: 17px;
+}
+
+
+/* =========================================================
+   CONTROLES
+   ========================================================= */
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    min-height: 90px;
+
+    padding: 20px;
+
+    background: #121625;
+
+    border-bottom: 1px solid #1f2536;
+}
+
+
+/* =========================================================
+   BOTÓN NUEVO ROL
+   ========================================================= */
+
+.btn-new {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 47px;
+
+    padding: 0 20px;
+
+    background: linear-gradient(
+        135deg,
+        #5065e8,
+        #3f55d6
+    );
+
+    color: #ffffff;
+
+    border-radius: 10px;
+
+    text-decoration: none;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    box-shadow:
+        0 5px 15px rgba(63, 85, 214, 0.20);
+
+    transition: all 0.2s ease;
+}
+
+.btn-new:hover {
+    background: linear-gradient(
+        135deg,
+        #5b70f0,
+        #465ce0
+    );
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 7px 18px rgba(63, 85, 214, 0.30);
+}
+
+
+/* =========================================================
+   ENCABEZADO TABLA (3 COLUMNAS: No, Nombre, Acciones)
+   ========================================================= */
+
+.table-header {
+    display: grid;
+
+    grid-template-columns:
+        80px
+        1fr
+        120px;
+
+    align-items: center;
+
+    min-height: 50px;
+
+    padding: 0 25px;
+
+    background: #151a2c;
+
+    border-bottom: 1px solid #282e41;
+
+    color: #9da4b8;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   CUERPO TABLA
+   ========================================================= */
+
+.table-body {
+    width: 100%;
+
+    background: #121625;
+}
+
+.row {
+    display: grid;
+
+    grid-template-columns:
+        80px
+        1fr
+        120px;
+
+    align-items: center;
+
+    min-height: 55px;
+
+    padding: 0 25px;
+
+    background: #121625;
+
+    border-bottom: 1px solid #1f2536;
+
+    color: #d9dce5;
+
+    font-size: 14px;
+
+    transition: background 0.2s ease;
+}
+
+.row:hover {
+    background: #171c2d;
+}
+
+
+/* =========================================================
+   CELDAS
+   ========================================================= */
+
+.row > span {
+    min-width: 0;
+
+    padding-right: 15px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+/* Número */
+.row > span:first-child {
+    color: #777f95;
+    font-weight: 500;
+}
+
+/* Nombre del Rol */
+.row > span:nth-child(2) {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   ACCIONES
+   ========================================================= */
+
+.actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-action {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    background: #20263a;
+
+    color: #7f91ff;
+
+    border: 1px solid #2b3248;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    font-size: 16px;
+
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    background: #29304a;
+
+    color: #9aa7ff;
+
+    border-color: #3b4670;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ESTADO VACÍO
+   ========================================================= */
+
+.empty-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px 20px;
+
+    color: #777f95;
+
+    font-size: 14px;
+    gap: 10px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .module-header {
+        padding: 0 15px;
+    }
+
+    .controls {
+        padding: 15px;
+        justify-content: stretch;
+    }
+
+    .btn-new {
+        width: 100%;
+    }
+
+    .table-header,
+    .row {
+        grid-template-columns: 50px 1fr 80px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .table-header {
+        font-size: 12px;
+    }
+
+    .row {
+        font-size: 13px;
+    }
+}

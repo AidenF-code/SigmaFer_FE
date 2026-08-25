@@ -1,0 +1,138 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Lista de salidas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<style>
+.table-header.salidas-grid,
+.row.salidas-grid {
+    display: grid;
+    grid-template-columns: 45px 130px 1.5fr 2fr 110px 90px;
+    align-items: center;
+    column-gap: 12px;
+}
+.tag.salida {
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.12);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+        <h2>Salidas de Inventario</h2>
+        
+        <div class="window-actions">
+            <a href="{{ url_for('inventarios.inicio') }}" class="btn-close-pro" title="Volver al menú">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <!-- BUSCADOR -->
+        <input 
+            type="text" 
+            id="input-busqueda-salidas"
+            class="search" 
+            placeholder="Buscar por número de documento o motivo..."
+            autocomplete="off"
+        >
+
+        <!-- BOTÓN NUEVA SALIDA -->
+        <a href="{{ url_for('inventarios.crear_salida') }}" class="btn-new" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+            + Nueva salida
+        </a>
+
+    </div>
+
+    <!-- HEADER TABLA -->
+    <div class="table-header salidas-grid">
+        <span>No.</span>
+        <span>No. Documento</span>
+        <span>Responsable</span>
+        <span>Motivo / Observaciones</span>
+        <span>Fecha</span>
+        <span style="text-align: center;">Estado</span>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-body" id="tabla-salidas-body">
+
+        {% for doc in documentos %}
+        <div class="row salidas-grid fila-salida"
+             data-doc="{{ (doc.numero_documento or '') | lower }}"
+             data-obs="{{ (doc.observaciones or '') | lower }}"
+             data-user="{{ (doc.usuario or '') | lower }}">
+            <span>{{ loop.index }}</span>
+            <strong style="color: #f87171; font-family: monospace;">{{ doc.numero_documento }}</strong>
+            <span style="color: #ffffff;">{{ doc.usuario or 'Usuario' }}</span>
+            <span style="color: #94a3b8; font-size: 13px;">{{ doc.observaciones or 'Salida de inventario' }}</span>
+            <span style="color: #cbd5e1;">{{ doc.fecha_creacion }}</span>
+            <div style="text-align: center;">
+                <span class="tag salida">Descargado</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="row" style="display: flex; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No hay documentos de salida registrados actualmente.</span>
+        </div>
+        {% endfor %}
+
+        <div id="sin-resultados-salidas" class="row" style="display: none; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No se encontraron salidas que coincidan con la búsqueda.</span>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputBusqueda = document.getElementById("input-busqueda-salidas");
+    const filas = document.querySelectorAll(".fila-salida");
+    const sinResultados = document.getElementById("sin-resultados-salidas");
+
+    function filtrarSalidas() {
+        const texto = inputBusqueda.value.trim().toLowerCase();
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const doc = fila.getAttribute("data-doc") || "";
+            const obs = fila.getAttribute("data-obs") || "";
+            const user = fila.getAttribute("data-user") || "";
+
+            const coincide = !texto || doc.includes(texto) || obs.includes(texto) || user.includes(texto);
+
+            if (coincide) {
+                fila.style.display = "grid";
+                visibles++;
+            } else {
+                fila.style.display = "none";
+            }
+        });
+
+        if (sinResultados) {
+            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+        }
+    }
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarSalidas);
+});
+</script>
+{% endblock %}

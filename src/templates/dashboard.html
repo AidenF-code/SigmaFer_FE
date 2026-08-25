@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estyles/dashboard.css') }}">
+
+    <!-- Iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="container">
+
+<section class="hub-container">
+
+    <div class="hub-box">
+
+        <div class="module">
+            <a href="{{ url_for('administracion.inicio')}}" class="circle admin" >
+                <i class="fa-solid fa-user-gear"></i>
+            </a>
+            <p>Administrador</p>
+        </div>
+
+        <div class="module">
+            <a  href="{{ url_for('facturacion.inicio') }}" class="circle facturacion" >
+                <i class="fa-solid fa-cash-register"></i>
+            </a>
+            <p>Facturación</p>
+        </div>
+
+        <div class="module">
+            <a href="{{ url_for('inventarios.inicio') }}" class="circle inventarios" >
+                <i class="fa-solid fa-warehouse"></i>
+            </a>
+            <p>Inventarios</p>
+        </div>
+
+        <div class="module">
+            <a href="{{ url_for('index.inicio') }}" class="circle logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
+            <p>Salir</p>
+        </div>
+
+    </div>
+
+</section>
+
+</body>
+</html>

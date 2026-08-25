@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | Inventarios</title>
+
+    <link rel="stylesheet" href = "{{ url_for('static', filename='estyles/inventarios/modulo_inventarios.css') }}">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"">
+
+</head>
+
+
+<body>
+
+    <!-- ========================================== -->
+    <!-- NAVBAR -->
+    <!-- ========================================== -->
+
+    <header class="navbar">
+
+        <!-- LOGO -->
+
+        <a href = "{{url_for ('dashboard.dashboard')}}"
+           class="brand">
+
+            <img src="{{ url_for('static', filename='imagenes/logo-horizontal-sigmafer.png') }}"
+                 alt="SigmaFer">
+
+        </a>
+
+
+        <!-- MENÚ -->
+
+        <nav class="nav-menu">
+
+            <a href="{{ url_for('inventarios.inicio') }}" class="nav-item active">
+                <i class="fa-solid fa-house"></i>
+                <span>Inicio</span>
+            </a>
+
+
+
+                <li class="dropdown">
+                    <!-- BOTÓN PRINCIPAL -->
+                    <a href="#" class="nav-item">
+                        <i class="fa-solid fa-cube"></i>
+                        <span>Productos</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </a>
+                    <!-- SUBMENÚ -->
+                    <ul class="submenu">
+
+                        <li>
+                            <a href="{{ url_for('inventarios.crear_producto') }}">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Nuevo Producto</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ url_for('inventarios.lista_productos') }}">
+                                <i class="fa-solid fa-list"></i>
+                                <span>Lista de Productos</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>   
+
+
+                <li class="dropdown">
+                    <!-- BOTÓN PRINCIPAL -->
+                    <a href="#" class="nav-item">
+                        <i class="fa-solid fa-truck"></i>
+                        <span>Proveedores</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </a>
+                    <!-- SUBMENÚ -->
+                    <ul class="submenu">
+
+                        <li>
+                            <a href="{{ url_for('inventarios.crear_proveedor') }}">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Nuevo Proveedor</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ url_for('inventarios.lista_proveedores') }}">
+                                <i class="fa-solid fa-list"></i>
+                                <span>Lista de Proveedores</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- DOCUMENTOS -->
+                <li class="dropdown">
+                    <a href="#" class="nav-item">
+                        <i class="fa-solid fa-file"></i>
+                        <span>Documentos</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </a>
+                        <!-- SUBMENÚ DOCUMENTOS -->
+                        <ul class="submenu">
+                            <!-- ENTRADA DE DOCUMENTOS -->
+                            <li class="dropdown-sub">
+                                <a href="#" class="submenu-item">
+                                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    <span>Entrada de Documentos</span>
+                                    <i class="fa-solid fa-chevron-right sub-arrow"></i>
+                                </a>
+                                <!-- SUBMENÚ -->
+                                <ul class="submenu-sub">
+                                    <li>
+                                        <a href="{{ url_for('inventarios.crear_entrada') }}">
+                                            <i class="fa-solid fa-plus"></i>
+                                            <span>Crear</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ url_for('inventarios.lista_entradas')}}">
+                                            <i class="fa-solid fa-list"></i>
+                                            <span>Lista</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                         <!-- SALIDA DE DOCUMENTOS -->
+                            <li class="dropdown-sub">
+                                <a href="#" class="submenu-item">
+                                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                    <span>Salida de Documentos</span>
+                                    <i class="fa-solid fa-chevron-right sub-arrow"></i>
+                                </a>
+                                <!-- SUBMENÚ -->
+                                <ul class="submenu-sub">
+                                    <li>
+                                        <a href="{{ url_for('inventarios.crear_salida') }}">
+                                            <i class="fa-solid fa-plus"></i>
+                                            <span>Crear</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ url_for('inventarios.lista_salidas') }}">
+                                            <i class="fa-solid fa-list"></i>
+                                            <span>Lista</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                </li>
+
+
+
+                <li class="dropdown">
+                    <!-- BOTÓN PRINCIPAL -->
+                    <a href="#" class="nav-item">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Órdenes de Compra</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </a>
+                    <!-- SUBMENÚ -->
+                    <ul class="submenu">
+
+                        <li>
+                            <a href="{{ url_for('inventarios.crear_orden_compra') }}">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Nueva Órden de Compra</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ url_for('inventarios.lista_ordenes_compra') }}">
+                                <i class="fa-solid fa-list"></i>
+                                <span>Lista de Órdenes de Compra</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                
+
+                <li class="dropdown">
+                    <!-- BOTÓN PRINCIPAL -->
+                    <a href="#" class="nav-item">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Devoluciones</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </a>
+                    <!-- SUBMENÚ -->
+                    <ul class="submenu">
+
+                        <li>
+                            <a href="{{ url_for('inventarios.crear_devolucion') }}">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Nueva Devolución</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ url_for('inventarios.lista_devoluciones') }}">
+                                <i class="fa-solid fa-list"></i>
+                                <span>Lista de Devoluciones</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+
+        </nav>
+
+
+        <!-- ========================================== -->
+        <!-- MENU USUARIO -->
+        <!-- ========================================== -->
+
+        <div class="user-menu">
+
+            <!-- BOTÓN DEL USUARIO -->
+            <div class="user-profile">
+
+                <div class="avatar">
+                    AF
+                </div>
+
+                <span class="username">
+                    Andres Fernandez
+                </span>
+
+                <i class="fa-solid fa-chevron-down user-arrow"></i>
+
+            </div>
+
+
+            <!-- DROPDOWN -->
+            <ul class="user-dropdown">
+
+                <li>
+                    <a href="{{ url_for('index.inicio') }}">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Salir</span>
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- ========================================== -->
+    <!-- CONTENIDO PRINCIPAL -->
+    <!-- ========================================== -->
+
+    <main class="dashboard">
+
+
+        <!-- ENCABEZADO -->
+
+        <section class="dashboard-header">
+
+            <div>
+
+                <h1>
+                    ¡Buenos días, Andres! 
+                </h1>
+
+                <p>
+                    Resumen general de SigmaFer
+                </p>
+
+            </div>
+
+
+            <div class="date-box">
+
+                <i class="fa-regular fa-calendar"></i>
+
+                <span>
+                    7 de agosto de 2026
+                </span>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ========================================== -->
+        <!-- CONTENEDORES PRINCIPALES -->
+        <!-- ========================================== -->
+
+        <section class="dashboard-grid">
+
+
+            <!-- ====================================== -->
+            <!-- ALERTAS DE STOCK -->
+            <!-- ====================================== -->
+
+            <article class="glass-panel">
+
+
+                <div class="panel-header">
+
+                    <div class="panel-title">
+
+                        <i class="fa-regular fa-bell"></i>
+
+                        <h2>
+                            Alertas de Stock
+                        </h2>
+
+                    </div>
+
+
+                    <a href="#"
+                       class="view-link">
+
+                        Ver todas las alertas
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+
+
+                <!-- ALERTA 1 -->
+
+                <div class="alert-item danger">
+
+                    <div class="alert-icon">
+
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    </div>
+
+
+                    <div class="alert-info">
+
+                        <strong>
+                            Productos bajo stock
+                        </strong>
+
+                        <span>
+                            Requieren reposición urgente
+                        </span>
+
+                    </div>
+
+
+                    <span class="alert-number">
+                        37
+                    </span>
+
+
+                    <i class="fa-solid fa-chevron-right item-arrow"></i>
+
+                </div>
+
+
+
+                <!-- ALERTA 2 -->
+
+                <div class="alert-item warning">
+
+                    <div class="alert-icon">
+
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    </div>
+
+
+                    <div class="alert-info">
+
+                        <strong>
+                            Productos cercanos al límite
+                        </strong>
+
+                        <span>
+                            Stock próximo al nivel mínimo
+                        </span>
+
+                    </div>
+
+
+                    <span class="alert-number">
+                        12
+                    </span>
+
+
+                    <i class="fa-solid fa-chevron-right item-arrow"></i>
+
+                </div>
+
+
+
+                <!-- ALERTA 3 -->
+
+                <div class="alert-item success">
+
+                    <div class="alert-icon">
+
+                        <i class="fa-solid fa-cube"></i>
+
+                    </div>
+
+
+                    <div class="alert-info">
+
+                        <strong>
+                            Productos con sobrestock
+                        </strong>
+
+                        <span>
+                            Stock por encima del nivel óptimo
+                        </span>
+
+                    </div>
+
+
+                    <span class="alert-number">
+                        24
+                    </span>
+
+
+                    <i class="fa-solid fa-chevron-right item-arrow"></i>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- ====================================== -->
+            <!-- ÓRDENES PENDIENTES -->
+            <!-- ====================================== -->
+
+            <article class="glass-panel">
+
+
+                <div class="panel-header">
+
+                    <div class="panel-title">
+
+                        <i class="fa-regular fa-clipboard"></i>
+
+                        <h2>
+                            Órdenes Pendientes
+                        </h2>
+
+                    </div>
+
+
+                    <a href="#"
+                       class="view-link">
+
+                        Ver todas las órdenes
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </a>
+
+                </div>
+
+
+
+                <!-- ORDEN 1 -->
+
+                <div class="order-item">
+
+                    <div class="order-icon">
+
+                        <i class="fa-regular fa-file"></i>
+
+                    </div>
+
+
+                    <div class="order-info">
+
+                        <strong>
+                            OC-001
+                        </strong>
+
+                        <span>
+                            Cliente: Distribuciones del Norte
+                        </span>
+
+                    </div>
+
+
+                    <span class="order-status">
+                        Pendiente
+                    </span>
+
+
+                    <div class="order-date">
+
+                        <i class="fa-regular fa-calendar"></i>
+
+                        08/08/2026
+
+                    </div>
+
+
+                    <i class="fa-solid fa-chevron-right item-arrow"></i>
+
+                </div>
+
+
+
+                <!-- ORDEN 2 -->
+
+                <div class="order-item">
+
+                    <div class="order-icon">
+
+                        <i class="fa-regular fa-file"></i>
+
+                    </div>
+
+
+                    <div class="order-info">
+
+                        <strong>
+                            OC-002
+                        </strong>
+
+                        <span>
+                            Cliente: Ferretería la 20
+                        </span>
+
+                    </div>
+
+
+                    <span class="order-status">
+                        Pendiente
+                    </span>
+
+
+                    <div class="order-date">
+
+                        <i class="fa-regular fa-calendar"></i>
+
+                        09/08/2026
+
+                    </div>
+
+
+                    <i class="fa-solid fa-chevron-right item-arrow"></i>
+
+                </div>
+
+            </article>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- ========================================== -->
+    <!-- FOOTER -->
+    <!-- ========================================== -->
+
+    <footer class="footer">
+
+        © 2026 SigmaFer. Todos los derechos reservados.
+
+    </footer>
+
+
+</body>
+
+</html>

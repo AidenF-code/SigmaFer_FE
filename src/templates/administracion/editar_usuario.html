@@ -1,0 +1,91 @@
+{% extends 'administracion/base_administracion.html' %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/crear_usuario.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card">
+
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Editar Usuario: {{ usuario.nombre }}</h2>
+        </div>
+
+        <!-- FORM -->
+        <div class="module-body">
+
+            <form class="form-grid" method="POST">
+
+                <!-- Nombre (solo lectura) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 5px; display: block;">Nombre Completo</label>
+                    <input type="text" name="nombre" value="{{ usuario.nombre }}" placeholder="Nombre del usuario" required readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <!-- Identificación (solo lectura) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 5px; display: block;">Documento de Identificación</label>
+                    <input type="text" name="identificacion" value="{{ usuario.identificacion }}" placeholder="Documento" required readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <!-- Correo (solo lectura) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 5px; display: block;">Correo Electrónico</label>
+                    <input type="email" name="correo" value="{{ usuario.correo }}" placeholder="Correo" required readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <!-- Teléfono (editable) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 5px; display: block;">Teléfono / Celular</label>
+                    <input type="text" name="telefono" value="{{ usuario.telefono }}" placeholder="Teléfono" required>
+                </div>
+
+                <!-- Rol (editable) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 5px; display: block;">Rol del Usuario</label>
+                    <select name="rol_id" required>
+                        <option value="" disabled>Seleccione un Rol</option>
+                        {% for rol in roles %}
+                            <option value="{{ rol.id }}" {% if rol.id == usuario.rol_id %}selected{% endif %}>
+                                {{ rol.nombre }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Estado (editable) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 5px; display: block;">Estado</label>
+                    <select name="estado" required>
+                        <option value="1" {% if usuario.estado %}selected{% endif %}>Activo</option>
+                        <option value="0" {% if not usuario.estado %}selected{% endif %}>Inactivo</option>
+                    </select>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="form-actions">
+                    <a href="{{ url_for('administracion.lista_usuarios') }}" class="btn cancel">Cancelar</a>
+                    <button type="submit" class="btn save">Guardar Cambios</button>
+                </div>
+
+            </form>
+
+            {% if error %}
+                <div class="form-error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

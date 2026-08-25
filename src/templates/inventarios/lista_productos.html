@@ -1,0 +1,166 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Lista de productos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+    
+    <!-- HEADER -->
+    <div class="module-header">
+        <h2>Productos</h2>
+        
+        <div class="window-actions">
+            <a href="{{ url_for('inventarios.inicio') }}" class="btn-close-pro" title="Volver al menú">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- CONTROLES -->
+    <div class="controls">
+        
+        <!-- BUSCADOR -->
+        <input type="text" id="input-busqueda-producto" class="search" placeholder="Buscar por nombre o código..." autocomplete="off">
+        
+        <a class="btn-new" href="{{ url_for('inventarios.crear_producto') }}">+ Nuevo producto</a>
+        
+        <!-- FILTROS -->
+        <div class="filters">
+            <select id="filtro-estado">
+                <option value="">Todos los Estados</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+            </select>
+            
+            <select id="filtro-proveedor">
+                <option value="">Todos los Proveedores</option>
+                {% for p in proveedores %}
+                <option value="{{ (p.nombre or '') | lower }}">{{ p.nombre }}</option>
+                {% endfor %}
+            </select>
+            
+            <select id="filtro-categoria">
+                <option value="">Todas las Categorías</option>
+                {% for c in categorias %}
+                <option value="{{ (c.nombre or '') | lower }}">{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+    </div>
+    
+    <!-- SUBHEADER -->
+    <div class="table-header">
+        <span>No.</span>
+        <span>Código</span>
+        <span>Nombre</span>
+        <span>Categoría</span>
+        <span>Proveedor</span>
+        <span>Stock</span>
+        <span>Stock Min</span>
+        <span>Stock Max</span>
+        <span>Precio</span>
+        <span>Estado</span>
+        <span style="text-align: center;">Acciones</span>
+    </div>
+    
+    <!-- TABLA -->
+    <div class="table-body" id="tabla-productos-body">
+
+        {% for productos in productos %}
+        <div class="row fila-producto"
+             data-nombre="{{ (productos.nombre or '') | lower }}"
+             data-codigo="{{ (productos.codigo or '') | lower }}"
+             data-categoria="{{ (productos.categoria or '') | lower }}"
+             data-proveedor="{{ (productos.proveedor or '') | lower }}"
+             data-estado="{{ 'activo' if productos.estado else 'inactivo' }}">
+            <span>{{ loop.index }}</span>
+            <span style="color: #60a5fa; font-weight: 500;">{{ productos.codigo }}</span>
+            <strong style="color: #ffffff;">{{ productos.nombre }}</strong>
+            <span style="color: #cbd5e1;">{{ productos.categoria or 'Sin categoría' }}</span>
+            <span style="color: #94a3b8;">{{ productos.proveedor or 'Sin proveedor' }}</span>
+            <span style="font-weight: 600; color: {% if (productos.stock | float) <= (productos.stock_minimo | float) %}#ef4444{% else %}#22c55e{% endif %};">
+                {{ productos.stock }}
+            </span>
+            <span>{{ productos.stock_minimo }}</span>
+            <span>{{ productos.stock_maximo or '-' }}</span>
+            <span style="color: #38bdf8;">$ {{ productos.precio }}</span>
+            <span class="{{ 'activo' if productos.estado else 'inactivo' }}">
+                {{ 'Activo' if productos.estado else 'Inactivo' }}
+            </span>
+
+            <div class="actions">
+                <a class="btn-action edit" href="{{ url_for('inventarios.editar_producto', id=productos.id) }}" title="Editar producto">✎</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="row" style="display: flex; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No hay productos registrados actualmente.</span>
+        </div>
+        {% endfor %}
+
+        <div id="sin-resultados" class="row" style="display: none; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No se encontraron productos que coincidan con los filtros seleccionados.</span>
+        </div>
+        
+    </div>
+    
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputBusqueda = document.getElementById("input-busqueda-producto");
+    const filtroEstado = document.getElementById("filtro-estado");
+    const filtroProveedor = document.getElementById("filtro-proveedor");
+    const filtroCategoria = document.getElementById("filtro-categoria");
+    const filas = document.querySelectorAll(".fila-producto");
+    const sinResultados = document.getElementById("sin-resultados");
+
+    function filtrarProductos() {
+        const texto = inputBusqueda.value.trim().toLowerCase();
+        const estado = filtroEstado.value.trim().toLowerCase();
+        const proveedor = filtroProveedor.value.trim().toLowerCase();
+        const categoria = filtroCategoria.value.trim().toLowerCase();
+
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const nombre = fila.getAttribute("data-nombre") || "";
+            const codigo = fila.getAttribute("data-codigo") || "";
+            const fEstado = fila.getAttribute("data-estado") || "";
+            const fProveedor = fila.getAttribute("data-proveedor") || "";
+            const fCategoria = fila.getAttribute("data-categoria") || "";
+
+            const coincideTexto = !texto || nombre.includes(texto) || codigo.includes(texto);
+            const coincideEstado = !estado || fEstado === estado;
+            const coincideProveedor = !proveedor || fProveedor.includes(proveedor);
+            const coincideCategoria = !categoria || fCategoria.includes(categoria);
+
+            if (coincideTexto && coincideEstado && coincideProveedor && coincideCategoria) {
+                fila.style.display = "grid";
+                visibles++;
+            } else {
+                fila.style.display = "none";
+            }
+        });
+
+        if (sinResultados) {
+            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+        }
+    }
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarProductos);
+    if (filtroEstado) filtroEstado.addEventListener("change", filtrarProductos);
+    if (filtroProveedor) filtroProveedor.addEventListener("change", filtrarProductos);
+    if (filtroCategoria) filtroCategoria.addEventListener("change", filtrarProductos);
+});
+</script>
+{% endblock %}

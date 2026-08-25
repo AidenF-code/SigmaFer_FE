@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}SigmaFer_facturacion{% endblock %}</title>
+
+    <link rel="stylesheet" href = "{{ url_for('static', filename='estyles/inventarios/base_inventarios.css') }}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <body>
+
+    <!-- ========================================== -->
+    <!-- NAVBAR -->
+    <!-- ========================================== -->
+
+    <header class="navbar">
+
+        <!-- LOGO -->
+
+        <a href = "{{url_for ('dashboard.dashboard')}}"
+        class="brand">
+
+            <img src="{{ url_for('static', filename='imagenes/logo-horizontal-sigmafer.png') }}"
+                alt="SigmaFer">
+
+        </a>
+
+
+        <!-- MENÚ -->
+
+        <nav class="nav-menu">
+
+            <a href="{{ url_for('administracion.inicio') }}" class="nav-item active">
+                <i class="fa-solid fa-house"></i>
+                <span>Inicio</span>
+            </a>
+
+
+
+                <li class="dropdown">
+                    <!-- BOTÓN PRINCIPAL -->
+                    <a href="#" class="nav-item">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Usuarios</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </a>
+                    <!-- SUBMENÚ -->
+                    <ul class="submenu">
+
+                        <li>
+                            <a href="{{ url_for('administracion.crear_usuario') }}">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Nuevo Usuario</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ url_for('administracion.lista_usuarios') }}">
+                                <i class="fa-solid fa-list"></i>
+                                <span>Lista de Usuarios</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>   
+
+
+                <li class="dropdown">
+                    <!-- BOTÓN PRINCIPAL -->
+                    <a href="#" class="nav-item">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Roles</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </a>
+                    <!-- SUBMENÚ -->
+                    <ul class="submenu">
+
+                        <li>
+                            <a href="{{ url_for('administracion.crear_rol') }}">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Nuevo Rol</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ url_for('administracion.lista_roles') }}">
+                                <i class="fa-solid fa-list"></i>
+                                <span>Lista De Roles</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                
+
+        </nav>
+
+
+        <!-- ========================================== -->
+        <!-- MENU USUARIO -->
+        <!-- ========================================== -->
+
+        <div class="user-menu">
+            <!-- BOTÓN DEL USUARIO -->
+            <div class="user-profile">
+                <div class="avatar">
+                    AF
+                </div>
+                <span class="username">
+                    Andres Fernandez
+                </span>
+                <i class="fa-solid fa-chevron-down user-arrow"></i>
+            </div>
+
+            <!-- DROPDOWN -->
+            <ul class="user-dropdown">
+                <li>
+                    <a href="{{ url_for('index.inicio') }}">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Salir</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+    <!-- ========================================== -->
+    <!-- FOOTER -->
+    <!-- ========================================== -->
+
+    
+
+<!-- 👇 AQUÍ VA EL CONTENIDO VARIABLE -->
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+    <footer class="footer">
+
+        © 2026 SigmaFer. Todos los derechos reservados.
+
+    </footer>
+
+<!-- SCRIPTS GLOBALES -->
+<script>
+
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

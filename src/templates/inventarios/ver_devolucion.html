@@ -1,0 +1,182 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Devolución {{ documento.numero_documento }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_entrada.css') }}">
+<style>
+.devolucion-header-badge {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 10px 18px;
+    border-radius: 12px;
+    text-align: right;
+}
+.devolucion-header-badge span {
+    display: block;
+    font-size: 11px;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.devolucion-header-badge strong {
+    font-size: 20px;
+    color: #fbbf24;
+    font-family: monospace;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card wide">
+
+        <!-- =====================================================
+             ENCABEZADO
+        ====================================================== -->
+        <div class="module-header">
+            <div class="module-header-title">
+                <span class="module-kicker" style="color: #f59e0b;">DEVOLUCIONES</span>
+                <h2>Detalle de Devolución</h2>
+                <span class="module-subtitle">Consulta del documento de reingreso y ajuste de stock</span>
+            </div>
+
+            <div class="devolucion-header-badge">
+                <span>No. Consecutivo</span>
+                <strong>{{ documento.numero_documento }}</strong>
+            </div>
+        </div>
+
+        <div class="module-body">
+
+            <!-- =====================================================
+                 INFORMACIÓN DEL DOCUMENTO Y CLIENTE
+            ====================================================== -->
+            <div class="form-grid" style="margin-bottom: 25px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; display: block;">Fecha de Registro</label>
+                    <strong style="font-size: 15px; color: #fff;">{{ documento.fecha_creacion }}</strong>
+                </div>
+
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; display: block;">Cliente</label>
+                    <strong style="font-size: 15px; color: #fff;">{{ documento.cliente or 'No especificado' }}</strong>
+                </div>
+
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; display: block;">Usuario Responsable</label>
+                    <strong style="font-size: 15px; color: #fff;">{{ documento.usuario or '-' }}</strong>
+                </div>
+
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; display: block;">Estado</label>
+                    <span style="color: #fbbf24; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block;">
+                        Reintegrado al Inventario
+                    </span>
+                </div>
+
+                <div class="full-width" style="grid-column: 1 / -1; margin-top: 10px;">
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; display: block;">Motivo / Observaciones</label>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid #252b3d; padding: 12px 16px; border-radius: 10px; color: #e2e8f0; font-size: 14px; margin-top: 4px;">
+                        {{ documento.observaciones or 'Sin observaciones registradas.' }}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- FRANJA DE DATOS DEL CLIENTE SI EXISTE -->
+            {% if documento.cliente %}
+            <div class="supplier-info-strip" style="margin-bottom: 25px;">
+                <div class="form-group">
+                    <label>Doc. / NIT</label>
+                    <input type="text" value="{{ documento.cliente_nit or '-' }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" value="{{ documento.cliente_direccion or '-' }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" value="{{ documento.cliente_telefono or '-' }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Correo</label>
+                    <input type="text" value="{{ documento.cliente_correo or '-' }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Contacto</label>
+                    <input type="text" value="{{ documento.cliente_contacto or '-' }}" readonly>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- =====================================================
+                 TABLA DE PRODUCTOS DEVUELTOS
+            ====================================================== -->
+            <div class="products-table-wrapper" style="margin-bottom: 25px;">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No.</th>
+                            <th style="width: 140px;">Código</th>
+                            <th>Producto</th>
+                            <th style="width: 120px; text-align: center;">Cant. Devuelta</th>
+                            <th style="width: 150px;">Valor Unitario</th>
+                            <th style="width: 150px; text-align: right;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set ns = namespace(subtotal_total=0) %}
+                        {% for d in documento.detalles %}
+                        {% set valor_total_item = (d.cantidad | float) * (d.valor_unitario | float) %}
+                        {% set ns.subtotal_total = ns.subtotal_total + valor_total_item %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><strong style="color: #60a5fa; font-family: monospace;">{{ d.codigo_producto or '-' }}</strong></td>
+                            <td><strong style="color: #ffffff;">{{ d.producto or ('Producto #' ~ d.producto_id) }}</strong></td>
+                            <td style="text-align: center; color: #fbbf24; font-weight: 700;">+{{ d.cantidad }}</td>
+                            <td>$ {{ "{:,.2f}".format(d.valor_unitario | float) if d.valor_unitario else '0.00' }}</td>
+                            <td style="text-align: right;"><strong style="color: #fbbf24;">$ {{ "{:,.2f}".format(valor_total_item) }}</strong></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 25px; color: #94a3b8;">
+                                No hay productos registrados en esta devolución.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- =====================================================
+                 TOTALES
+            ====================================================== -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 25px;">
+                <div class="summary-card" style="min-width: 280px;">
+                    <div class="summary-row summary-total">
+                        <span>Total Devolución</span>
+                        <strong style="color: #fbbf24;">$ {{ "{:,.2f}".format(ns.subtotal_total) }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =====================================================
+                 ACCIONES
+            ====================================================== -->
+            <div class="form-actions">
+                <a href="{{ url_for('inventarios.lista_devoluciones') }}" class="btn cancel">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Listado de Devoluciones
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

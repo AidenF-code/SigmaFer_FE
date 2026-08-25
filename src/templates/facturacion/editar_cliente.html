@@ -1,0 +1,101 @@
+{% extends 'facturacion/base_facturacion.html' %}
+
+{% block title %}Editar Cliente{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_productos.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card wide">
+
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Editar Cliente: {{ cliente.razon_social }}</h2>
+            <div class="window-actions">
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="dot red"></span>
+            </div>
+        </div>
+
+        <!-- FORM -->
+        <div class="module-body">
+
+            <form class="form-grid" method="POST">
+
+                <!-- Tipo de documento (solo lectura) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 6px; display: block;">Tipo de Documento</label>
+                    <input type="text" value="{{ cliente.tipo_documento }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <!-- Número de identificación (solo lectura) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 6px; display: block;">Número de Identificación</label>
+                    <input type="text" value="{{ cliente.numero_identificacion }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <!-- Razón Social (solo lectura) -->
+                <div style="grid-column: 1 / -1;">
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 6px; display: block;">Razón Social</label>
+                    <input type="text" value="{{ cliente.razon_social }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <!-- Nombre de contacto (editable) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 6px; display: block;">Nombre de Contacto</label>
+                    <input type="text" name="nombre" value="{{ cliente.nombre }}" placeholder="Nombre de contacto" required>
+                </div>
+
+                <!-- Teléfono (editable) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 6px; display: block;">Teléfono / Celular</label>
+                    <input type="text" name="telefono" value="{{ cliente.telefono }}" placeholder="Teléfono" required>
+                </div>
+
+                <!-- Correo Electrónico (editable) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 6px; display: block;">Correo Electrónico</label>
+                    <input type="email" name="correo" value="{{ cliente.correo }}" placeholder="correo@cliente.com" required>
+                </div>
+
+                <!-- Dirección (editable) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 6px; display: block;">Dirección del Cliente</label>
+                    <input type="text" name="direccion" value="{{ cliente.direccion }}" placeholder="Dirección cliente" required>
+                </div>
+
+                <!-- Estado (editable) -->
+                <div style="grid-column: 1 / -1;">
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 6px; display: block;">Estado del Cliente</label>
+                    <select name="estado" required>
+                        <option value="1" {% if cliente.estado %}selected{% endif %}>Activo</option>
+                        <option value="0" {% if not cliente.estado %}selected{% endif %}>Inactivo</option>
+                    </select>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="form-actions">
+                    <a href="{{ url_for('facturacion.lista_clientes') }}" class="btn cancel">Cancelar</a>
+                    <button type="submit" class="btn save">Guardar Cambios</button>
+                </div>
+
+            </form>
+
+            {% if error %}
+                <div class="form-error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

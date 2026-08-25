@@ -1,0 +1,66 @@
+{% extends 'administracion/base_administracion.html' %}
+
+{% block title %}Crear Usuario{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/crear_usuario.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card">
+
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Nuevo Usuario</h2>
+        </div>
+
+        <!-- FORM -->
+        <div class="module-body">
+
+            <form class="form-grid" method="POST">
+
+                <input type="text" name="nombre" placeholder="Nombre del usuario" required>
+                <input type="text" name="identificacion" placeholder="Documento" required>
+                <input type="email" name="correo" placeholder="Correo" required>
+                <input type="text" name="telefono" placeholder="Teléfono">
+                <input type="password" name="password" placeholder="Contraseña" required>
+                
+                <select name="rol_id" required>
+                    <option value=""  disabled selected>Rol</option>
+                        {% for rol in roles %}
+                            <option value="{{ rol.id }}">
+                                {{ rol.nombre }}
+                            </option>
+                        {% endfor %}
+                </select>
+                    <select name="estado" required>
+                    <option value="1" selected>Activo</option>
+                    <option value="0">Inactivo</option>
+                </select>
+
+                <div class="form-actions">
+
+                    <a href="{{ url_for('administracion.inicio')}}" class="btn cancel">Cancelar</a>
+
+                    <button type="submit" class="btn save">Guardar</button>
+
+                </div>
+
+            </form>
+            {% if error %}
+                <div class="form-error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+    </div>
+
+</div>
+
+{% endblock %}

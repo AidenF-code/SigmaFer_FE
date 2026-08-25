@@ -1,0 +1,270 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Crear Salida de Inventario{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_entrada.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card wide">
+
+        <!-- =====================================================
+             ENCABEZADO
+        ====================================================== -->
+        <div class="module-header">
+            <div class="module-header-title">
+                <span class="module-kicker" style="color: #f87171;">INVENTARIOS</span>
+                <h2>Salida de Documento</h2>
+                <span class="module-subtitle">Registro de bajas, mermas, uso interno o devoluciones de inventario</span>
+            </div>
+
+            <div class="invoice-number" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+                <span>No. Consecutivo</span>
+                <strong id="label-consecutivo-header" style="color: #f87171;">{{ consecutivo_sa }}</strong>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('inventarios.crear_salida') }}" id="form-salida" autocomplete="off">
+
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 14px 20px; border-radius: 12px; margin: 20px 30px 0 30px; display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px;"></i>
+                <span><strong>Error al guardar salida:</strong> {{ error }}</span>
+            </div>
+            {% endif %}
+
+            <!-- VALORES OCULTOS DE CONTROL -->
+            <input type="hidden" name="numero_documento" id="numero_documento" value="{{ consecutivo_sa }}">
+
+            <!-- =====================================================
+                 DATOS DEL CABECERO (IGUAL A ENTRADA POR AJUSTE)
+            ====================================================== -->
+            <section class="module-body" style="padding-bottom: 10px;">
+                <div class="form-grid" style="grid-template-columns: 200px 240px 1fr;">
+                    
+                    <!-- Fecha y Hora -->
+                    <div class="form-group">
+                        <label>Fecha y Hora</label>
+                        <input type="text" value="{{ fecha_hora }}" readonly style="opacity: 0.8; cursor: not-allowed;">
+                    </div>
+
+                    <!-- Usuario Responsable -->
+                    <div class="form-group">
+                        <label for="usuario_id">Usuario Responsable</label>
+                        <select id="usuario_id" name="usuario_id">
+                            {% for u in usuarios %}
+                            <option value="{{ u.id }}">{{ u.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Observaciones / Motivo de Salida -->
+                    <div class="form-group">
+                        <label for="observaciones">Observaciones / Motivo de Salida *</label>
+                        <input type="text" id="observaciones" name="observaciones" placeholder="Indique la razón de la salida (ej: Merma, Daño, Uso interno, Baja de stock, etc.)..." required>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 CUERPO DE SALIDA: TABLA DE PRODUCTOS (5 FILAS VISIBLES)
+            ====================================================== -->
+            <section class="products-section">
+                <div class="products-title">
+                    <div class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+                        <div>
+                            <i class="fa-solid fa-boxes-stacked" style="color: #f87171;"></i>
+                            <div>
+                                <h3>Productos a Descargar</h3>
+                                <span>Indique los productos, cantidades a retirar y valores de referencia (Presione Enter para navegar o agregar líneas)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-product" id="btn-agregar-producto" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.35);">
+                        <i class="fa-solid fa-plus"></i> Agregar línea
+                    </button>
+                </div>
+
+                <div class="products-table-wrapper">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">Código</th>
+                                <th>Producto</th>
+                                <th style="width: 110px;">Cant. Salida</th>
+                                <th style="width: 140px;">Valor Unit.</th>
+                                <th style="width: 100px;">IVA</th>
+                                <th style="width: 140px;">Subtotal</th>
+                                <th style="width: 45px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabla-productos-body">
+                            {% for i in range(1, 6) %}
+                            <tr class="producto-row">
+                                <td>
+                                    <input type="text" name="codigo[]" class="producto-codigo" placeholder="Código" autocomplete="off">
+                                </td>
+
+                                <td>
+                                    <div class="autocomplete-container">
+                                        <input type="text" name="producto_nombre[]" class="producto-nombre" placeholder="Buscar producto..." autocomplete="off">
+                                        <input type="hidden" name="producto_id[]" class="producto-id">
+                                        <div class="autocomplete-results productos-resultados"></div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="1">
+                                </td>
+
+                                <td>
+                                    <input type="number" name="valor_unitario[]" class="producto-precio" min="0" step="0.01" placeholder="0.00">
+                                </td>
+
+                                <td>
+                                    <select name="iva_porcentaje[]" class="producto-iva">
+                                        <option value="0">0%</option>
+                                        <option value="5">5%</option>
+                                        <option value="19" selected>19%</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="subtotal[]" class="producto-subtotal" value="$ 0,00" readonly>
+                                </td>
+
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-delete-product" title="Eliminar línea">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- RESUMEN DE TOTALES -->
+                <div class="summary-container">
+                    <div class="summary-card">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <strong id="subtotal-display">$ 0,00</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>IVA (19%)</span>
+                            <strong id="iva-display">$ 0,00</strong>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row summary-total">
+                            <span>Total Salida</span>
+                            <strong id="total-display" style="color: #f87171;">$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 ACCIONES
+            ====================================================== -->
+            <div class="form-actions">
+                <a href="{{ url_for('inventarios.inicio') }}" class="btn cancel">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
+
+                <button type="submit" class="btn save" id="btn-guardar-salida" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Guardar Salida
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     MODAL DE RESUMEN Y CONFIRMACIÓN
+====================================================== -->
+<div id="modal-resumen-salida" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <span class="module-kicker" style="color: #f87171;">Confirmación</span>
+                <h3 style="margin: 3px 0 0 0; font-size: 20px; color: #fff;">Resumen de Salida de Inventario</h3>
+            </div>
+            <div class="invoice-number" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+                <span>No. Salida</span>
+                <strong id="modal-numero-doc" style="color: #f87171;">{{ consecutivo_sa }}</strong>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            
+            <div class="modal-info-grid">
+                <div class="modal-info-item">
+                    <span>Tipo de Documento:</span>
+                    <strong>Salida de Inventario</strong>
+                </div>
+                <div class="modal-info-item">
+                    <span>Consecutivo:</span>
+                    <strong id="modal-consecutivo-texto">{{ consecutivo_sa }}</strong>
+                </div>
+                <div class="modal-info-item" style="grid-column: 1 / -1;" id="modal-info-principal">
+                    <span>Motivo / Justificación:</span>
+                    <strong id="modal-motivo-texto">-</strong>
+                </div>
+            </div>
+
+            <!-- Tabla de productos modal -->
+            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #252b3d; border-radius: 10px; margin-bottom: 15px;">
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant. Salida</th>
+                            <th>Valor Unit.</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tabla-items">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totales modal -->
+            <div class="modal-totales">
+                <div>Subtotal: <strong id="modal-subtotal">$ 0,00</strong></div>
+                <div>IVA: <strong id="modal-iva">$ 0,00</strong></div>
+                <div class="modal-total-destacado" style="color: #f87171 !important;">Total Salida: <strong id="modal-total" style="color: #f87171 !important;">$ 0,00</strong></div>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" id="btn-modal-cancelar" class="btn-modal-cancel">
+                <i class="fa-solid fa-arrow-left"></i> Modificar Salida
+            </button>
+            <button type="button" id="btn-modal-confirmar" class="btn-modal-confirm" style="background: linear-gradient(135deg, #dc2626, #b91c1c);">
+                <i class="fa-solid fa-check"></i> Confirmar y Descargar Stock
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.sigmaferProductos = {{ productos | tojson }};
+window.consecutivoSA = "{{ consecutivo_sa }}";
+</script>
+<script src="{{ url_for('static', filename='js/inventarios/crear_salida.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,213 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    height: 100vh;
+    background: radial-gradient(circle at top, #1e3a8a, #020617);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+/*==========================================
+    FONDO
+==========================================*/
+
+.container{
+
+    width:100%;
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:35px;
+
+    overflow:hidden;
+
+    background:
+    linear-gradient(
+        120deg,
+        #2B469D 0%,
+        #1A2D73 45%,
+        #081330 100%
+    );
+
+}
+
+/*==========================================
+    PANEL PRINCIPAL
+==========================================*/
+
+/*==========================================*
+* PANEL CENTRAL - GLASS
+*==========================================*/
+
+.hub-box {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 55px;
+
+    width: min(850px, 90vw);
+
+    min-height: 300px;
+
+    padding: 50px 60px;
+
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,.12),
+            rgba(255,255,255,.04)
+        );
+
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+
+    border: 1px solid rgba(255,255,255,.20);
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,.35),
+        inset 0 1px 0 rgba(255,255,255,.15);
+
+    overflow: hidden;
+
+    flex-wrap: wrap;
+}
+
+/*==========================================*
+* BORDE ILUMINADO
+*==========================================*/
+
+.hub-box::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    padding: 1px;
+
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            140deg,
+            rgba(255,255,255,.60),
+            rgba(255,255,255,.05)
+        );
+
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+
+    -webkit-mask-composite: xor;
+
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+
+    mask-composite: exclude;
+
+    pointer-events: none;
+}
+
+
+/* MÓDULOS */
+.module {
+    text-align: center;
+    cursor: pointer;
+}
+
+/* BOTONES */
+.circle {
+    width: 95px;
+    height: 95px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    transition: 0.3s;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    text-decoration: none;
+
+}
+
+/* HOVER */
+.circle:hover {
+    transform: translateY(-6px) scale(1.08);
+}
+
+/* COLORES POR MÓDULO */
+.admin i {
+    color: #60a5fa; /* azul */
+}
+
+.facturacion i {
+    color: #34d399; /* verde */
+}
+
+.inventarios i {
+    color: #fbbf24; /* amarillo */
+}
+
+.logout i {
+    color: #f87171; /* rojo */
+}
+
+/* EFECTO GLOW POR COLOR */
+.admin:hover {
+    box-shadow: 0 0 25px #60a5fa;
+}
+
+.facturacion:hover {
+    box-shadow: 0 0 25px #34d399;
+}
+
+.inventarios:hover {
+    box-shadow: 0 0 25px #fbbf24;
+}
+
+.logout:hover {
+    box-shadow: 0 0 25px #f87171;
+}
+
+/* TEXTO */
+.module p {
+    margin-top: 12px;
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .hub-box {
+        padding: 30px;
+        gap: 25px;
+    }
+
+    .circle {
+        width: 75px;
+        height: 75px;
+        font-size: 22px;
+    }
+}

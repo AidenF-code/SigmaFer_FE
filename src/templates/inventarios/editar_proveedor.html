@@ -1,0 +1,96 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Editar Proveedor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_productos.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    
+    <div class="module-card">
+        
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Editar Proveedor</h2>
+            
+            <div class="window-actions">
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="dot red"></span>
+            </div>
+        </div>
+        
+        <!-- CUERPO -->
+        <div class="module-body">
+            
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px;"></i>
+                <span><strong>Error:</strong> {{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form class="form-grid" method="POST" action="{{ url_for('inventarios.editar_proveedor', id=proveedor.id) }}">
+                
+                <!-- CAMPOS FIJOS (SOLO LECTURA) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">Razón Social / Nombre (Fijo)</label>
+                    <input type="text" value="{{ proveedor.nombre }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">NIT (Fijo)</label>
+                    <input type="text" value="{{ proveedor.nit }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <!-- CAMPOS EDITABLES -->
+                <div>
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Dirección *</label>
+                    <input type="text" placeholder="Dirección" name="direccion" value="{{ proveedor.direccion or '' }}" required>
+                </div>
+
+                <div>
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Teléfono *</label>
+                    <input type="text" placeholder="Teléfono" name="telefono" value="{{ proveedor.telefono or '' }}" required>
+                </div>
+
+                <div>
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Correo Electrónico *</label>
+                    <input type="email" placeholder="Correo Electrónico" name="correo" value="{{ proveedor.correo or '' }}" required>
+                </div>
+
+                <div>
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Nombre de Contacto *</label>
+                    <input type="text" placeholder="Contacto" name="nombre_contacto" value="{{ proveedor.nombre_contacto or '' }}" required>
+                </div>
+                
+                <div style="grid-column: 1 / -1;">
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Estado *</label>
+                    <select name="estado" required>
+                        <option value="1" {% if proveedor.estado %}selected{% endif %}>Activo</option>
+                        <option value="0" {% if not proveedor.estado %}selected{% endif %}>Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="form-actions" style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <a href="{{ url_for('inventarios.lista_proveedores') }}" class="btn cancel">
+                        Cancelar
+                    </a>
+
+                    <button type="submit" class="btn save" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+                        Guardar Cambios
+                    </button>
+                </div>
+                
+            </form>
+  
+        </div>
+        
+    </div>
+    
+</div>
+
+{% endblock %}

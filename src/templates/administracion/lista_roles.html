@@ -1,0 +1,66 @@
+{% extends 'administracion/base_administracion.html' %}
+
+{% block title %}Lista De Roles{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/lista_roles.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+
+        <h2>Roles del Sistema</h2>
+
+
+        <div class="window-actions">
+
+            <a href="{{ url_for('administracion.inicio') }}" class="btn-close-pro">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+            
+        </div>
+
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <a 
+            href="{{ url_for('administracion.crear_rol') }}"
+            class="btn-new"
+        >
+            + Nuevo Rol
+        </a>
+
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-header">
+        <span>No.</span>
+        <span>Nombre</span>
+        <span>Acciones</span>
+    </div>
+
+    <div class="table-body">
+
+        {% for roles in roles %}
+        <div class="row">
+            <span>{{ loop.index}}</span>
+            <span>{{ roles.nombre }}</span>
+
+
+            <div class="actions">
+                <a class="btn-action edit" href="#">✎</a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endblock %}

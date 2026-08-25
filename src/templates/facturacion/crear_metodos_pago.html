@@ -1,0 +1,55 @@
+{% extends 'facturacion/base_facturacion.html' %}
+
+{% block title %}Elaboracion de metodos de pago{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/facturacion/crear_metodos_pago.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card">
+
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Nuevo Metodo de pago</h2>
+        </div>
+
+        <!-- FORM -->
+        <div class="module-body">
+
+            <form class="form-grid" method="POST">
+
+                <input type="text" name="nombre" placeholder="Nombre de la forma de pago" required>
+
+                <select name="estado" required>
+                    <option value="1" selected>Activo</option>
+                    <option value="0">Inactivo</option>
+                </select>
+                <!-- BOTONES -->
+                <div class="form-actions">
+
+                    <a href="{{ url_for('facturacion.inicio')}}" class="btn cancel">Cancelar</a>
+
+                    <button type="submit" class="btn save">Guardar</button>
+
+                </div>
+
+            </form>
+        
+        </div>
+        {% if error %}
+            <div class="form-error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+    </div>
+
+</div>
+        
+            
+{% endblock %}

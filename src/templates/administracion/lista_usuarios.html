@@ -1,0 +1,77 @@
+{% extends 'administracion/base_administracion.html' %}
+
+{% block title %}Lista De Usuario{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/lista_usuarios.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+
+        <h2>Usuarios del Sistema</h2>
+
+        <div class="window-actions">
+
+            <a href="{{ url_for('administracion.inicio') }}" class="btn-close-pro">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+            
+        </div>
+
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <a 
+            href="{{ url_for('administracion.crear_usuario') }}"
+            class="btn-new"
+        >
+            + Nuevo Usuario
+        </a>
+
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-header">
+        <span>No.</span>
+        <span>Nombre</span>
+        <span>Identificacion</span>
+        <span>Correo</span>
+        <span>Telefono</span>
+        <span>Rol</span>
+        <span>Estado</span>
+        <span>Acciones</span>
+    </div>
+
+    <div class="table-body">
+
+        {% for usuario in usuarios %}
+        <div class="row">
+            <span>{{ loop.index}}</span>
+            <span>{{ usuario.nombre }}</span>
+            <span> {{ usuario.identificacion}} </span>
+            <span> {{ usuario.correo}} </span>
+            <span> {{ usuario.telefono}} </span>
+            <span> {{ usuario.rol}} </span>
+            <span class="{{ 'activo' if usuario.estado else 'inactivo' }}">
+                            {{ 'Activo' if usuario.estado else 'Inactivo' }}
+            </span>
+
+            <div class="actions">
+                <a class="btn-action edit" href="{{ url_for('administracion.editar_usuario', id=usuario.id) }}" title="Editar usuario">✎</a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+
+    </div>
+
+</div>
+{% endblock %}

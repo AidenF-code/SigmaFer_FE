@@ -1,0 +1,169 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Lista de devoluciones{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<style>
+.table-header.devoluciones-grid,
+.row.devoluciones-grid {
+    display: grid;
+    grid-template-columns: 45px 130px 1.5fr 1.2fr 2fr 110px 100px 70px;
+    align-items: center;
+    column-gap: 12px;
+}
+.tag.devolucion {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.15);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+.btn-action-view {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.btn-action-view:hover {
+    background: rgba(245, 158, 11, 0.25);
+    border-color: #fbbf24;
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+        <h2>Devoluciones de Clientes</h2>
+        
+        <div class="window-actions">
+            <a href="{{ url_for('inventarios.inicio') }}" class="btn-close-pro" title="Volver al menú">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <!-- BUSCADOR -->
+        <input 
+            type="text" 
+            id="input-busqueda-devoluciones"
+            class="search" 
+            placeholder="Buscar por número de devolución, cliente o motivo..."
+            autocomplete="off"
+        >
+
+        <!-- BOTÓN NUEVA DEVOLUCIÓN -->
+        <a href="{{ url_for('inventarios.crear_devolucion') }}" class="btn-new" style="background: linear-gradient(135deg, #d97706, #b45309);">
+            + Nueva devolución
+        </a>
+
+    </div>
+
+    <!-- HEADER TABLA -->
+    <div class="table-header devoluciones-grid">
+        <span>No.</span>
+        <span>No. Devolución</span>
+        <span>Cliente</span>
+        <span>Responsable</span>
+        <span>Motivo / Observaciones</span>
+        <span>Fecha</span>
+        <span style="text-align: center;">Estado</span>
+        <span style="text-align: center;">Acciones</span>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-body" id="tabla-devoluciones-body">
+
+        {% for doc in documentos %}
+        <div class="row devoluciones-grid fila-devolucion"
+             data-doc="{{ (doc.numero_documento or '') | lower }}"
+             data-cli="{{ (doc.cliente or '') | lower }}"
+             data-obs="{{ (doc.observaciones or '') | lower }}"
+             data-user="{{ (doc.usuario or '') | lower }}">
+            <span>{{ loop.index }}</span>
+            <strong style="color: #fbbf24; font-family: monospace;">{{ doc.numero_documento }}</strong>
+            <span style="color: #ffffff; font-weight: 600;">{{ doc.cliente or 'Cliente' }}</span>
+            <span style="color: #cbd5e1; font-size: 13px;">{{ doc.usuario or '-' }}</span>
+            <span style="color: #94a3b8; font-size: 13px;">{{ doc.observaciones or 'Devolución de cliente' }}</span>
+            <span style="color: #cbd5e1;">{{ doc.fecha_creacion }}</span>
+            <div style="text-align: center;">
+                <span class="tag devolucion">Reintegrado</span>
+            </div>
+            <div style="text-align: center;">
+                <a href="{{ url_for('inventarios.ver_devolucion', id=doc.id) }}"
+                   class="btn-action-view"
+                   title="Ver detalle de devolución">
+                    <i class="fa-solid fa-eye"></i>
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="row" style="display: flex; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No hay devoluciones registradas actualmente.</span>
+        </div>
+        {% endfor %}
+
+
+        <div id="sin-resultados-devoluciones" class="row" style="display: none; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No se encontraron devoluciones que coincidan con la búsqueda.</span>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputBusqueda = document.getElementById("input-busqueda-devoluciones");
+    const filas = document.querySelectorAll(".fila-devolucion");
+    const sinResultados = document.getElementById("sin-resultados-devoluciones");
+
+    function filtrarDevoluciones() {
+        const texto = inputBusqueda.value.trim().toLowerCase();
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const doc = fila.getAttribute("data-doc") || "";
+            const cli = fila.getAttribute("data-cli") || "";
+            const obs = fila.getAttribute("data-obs") || "";
+            const user = fila.getAttribute("data-user") || "";
+
+            const coincide = !texto || doc.includes(texto) || cli.includes(texto) || obs.includes(texto) || user.includes(texto);
+
+            if (coincide) {
+                fila.style.display = "grid";
+                visibles++;
+            } else {
+                fila.style.display = "none";
+            }
+        });
+
+        if (sinResultados) {
+            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+        }
+    }
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarDevoluciones);
+});
+</script>
+{% endblock %}

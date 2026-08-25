@@ -1,0 +1,327 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Crear Devolución de Inventario{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_entrada.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card wide">
+
+        <!-- =====================================================
+             ENCABEZADO
+        ====================================================== -->
+        <div class="module-header">
+            <div class="module-header-title">
+                <span class="module-kicker" style="color: #f59e0b;">DEVOLUCIONES</span>
+                <h2>Devolución de Documento</h2>
+                <span class="module-subtitle">Reintegro de productos a inventario por garantías o devoluciones sobre facturas</span>
+            </div>
+
+            <div class="invoice-number" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
+                <span>No. Consecutivo</span>
+                <strong id="label-consecutivo-header" style="color: #fbbf24;">{{ consecutivo_de }}</strong>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('inventarios.crear_devolucion') }}" id="form-devolucion" autocomplete="off">
+
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 14px 20px; border-radius: 12px; margin: 20px 30px 0 30px; display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px;"></i>
+                <span><strong>Error al guardar la devolución:</strong> {{ error }}</span>
+            </div>
+            {% endif %}
+
+            <!-- VALOR OCULTO CONSECUTIVO -->
+            <input type="hidden" name="numero_documento" id="numero_documento" value="{{ consecutivo_de }}">
+
+            <!-- =====================================================
+                 INFORMACIÓN DE FACTURA, CLIENTE Y MOTIVO
+            ====================================================== -->
+            <section class="module-body" style="padding-bottom: 10px;">
+                
+                <!-- FILA 1: DATOS PRINCIPALES (4 COLUMNAS) -->
+                <div class="form-grid grid-4">
+                    
+                    <!-- Fecha y Hora -->
+                    <div class="form-group">
+                        <label>Fecha y Hora</label>
+                        <input type="text" value="{{ fecha_hora }}" readonly style="opacity: 0.8; cursor: not-allowed;">
+                    </div>
+
+                    <!-- Buscador de Factura (ej: FV-00001) -->
+                    <div class="form-group">
+                        <label for="factura_busqueda">
+                            No. Factura de Venta <span style="color: #fbbf24;">(FV-00000)</span> *
+                        </label>
+                        <div class="autocomplete-container">
+                            <input type="text" id="factura_busqueda" name="numero_factura" placeholder="Ej: FV-00001..." autocomplete="off" required>
+                            <input type="hidden" id="factura_id" name="factura_id">
+                            <div class="autocomplete-results" id="facturas-resultados"></div>
+                        </div>
+                    </div>
+
+                    <!-- Cliente Asociado -->
+                    <div class="form-group">
+                        <label for="cliente_busqueda">
+                            Cliente Relacionado *
+                        </label>
+                        <div class="autocomplete-container">
+                            <input type="text" id="cliente_busqueda" name="cliente_busqueda" placeholder="Nombre o NIT del cliente..." autocomplete="off" required>
+                            <input type="hidden" id="cliente_id" name="cliente_id">
+                            <div class="autocomplete-results" id="clientes-resultados"></div>
+                        </div>
+                    </div>
+
+                    <!-- Usuario Responsable -->
+                    <div class="form-group">
+                        <label for="usuario_id">Usuario Responsable</label>
+                        <select id="usuario_id" name="usuario_id">
+                            {% for u in usuarios %}
+                            <option value="{{ u.id }}">{{ u.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- FILA 2: DATOS DEL CLIENTE EN BANDA HORIZONTAL COMPACTA -->
+                <div class="supplier-info-strip">
+                    <div class="form-group">
+                        <label>Doc. / NIT</label>
+                        <input type="text" id="nit_cliente" name="nit_cliente" placeholder="NIT / Cédula" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Dirección</label>
+                        <input type="text" id="direccion_cliente" placeholder="Dirección" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" id="telefono_cliente" placeholder="Teléfono" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="text" id="correo_cliente" placeholder="Correo" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Contacto</label>
+                        <input type="text" id="contacto_cliente" placeholder="Contacto" readonly>
+                    </div>
+                </div>
+
+                <!-- FILA 3: OBSERVACIONES / POR QUÉ SE REALIZA LA DEVOLUCIÓN -->
+                <div class="form-group full-width" style="margin-top: 10px;">
+                    <label for="observaciones">Observaciones / Motivo de la Devolución *</label>
+                    <input type="text" id="observaciones" name="observaciones" placeholder="Describa la razón de la devolución (ej: Producto defectuoso, error en despacho, garantía del cliente)..." required>
+                </div>
+
+            </section>
+
+            <!-- =====================================================
+                 CUERPO DE LA DEVOLUCIÓN: TABLA DE PRODUCTOS (5 FILAS)
+            ====================================================== -->
+            <section class="products-section">
+                <div class="products-title">
+                    <div class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+                        <div>
+                            <i class="fa-solid fa-rotate-left" style="color: #fbbf24;"></i>
+                            <div>
+                                <h3>Productos a Devolver (Reingreso a Stock)</h3>
+                                <span>Indique los productos que se reincorporan al inventario (Presione Enter para navegar o agregar líneas)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-product" id="btn-agregar-producto" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35);">
+                        <i class="fa-solid fa-plus"></i> Agregar línea
+                    </button>
+                </div>
+
+                <div class="products-table-wrapper">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">Código</th>
+                                <th>Producto</th>
+                                <th style="width: 110px;">Cant. Devolver</th>
+                                <th style="width: 140px;">Valor Unit.</th>
+                                <th style="width: 100px;">IVA</th>
+                                <th style="width: 140px;">Subtotal</th>
+                                <th style="width: 45px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabla-productos-body">
+                            {% for i in range(1, 6) %}
+                            <tr class="producto-row">
+                                <td>
+                                    <input type="text" name="codigo[]" class="producto-codigo" placeholder="Código" autocomplete="off">
+                                </td>
+
+                                <td>
+                                    <div class="autocomplete-container">
+                                        <input type="text" name="producto_nombre[]" class="producto-nombre" placeholder="Buscar producto..." autocomplete="off">
+                                        <input type="hidden" name="producto_id[]" class="producto-id">
+                                        <div class="autocomplete-results productos-resultados"></div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="1">
+                                </td>
+
+                                <td>
+                                    <input type="number" name="valor_unitario[]" class="producto-precio" min="0" step="0.01" placeholder="0.00">
+                                </td>
+
+                                <td>
+                                    <select name="iva_porcentaje[]" class="producto-iva">
+                                        <option value="0">0%</option>
+                                        <option value="5">5%</option>
+                                        <option value="19" selected>19%</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="subtotal[]" class="producto-subtotal" value="$ 0,00" readonly>
+                                </td>
+
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-delete-product" title="Eliminar línea">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- RESUMEN DE TOTALES -->
+                <div class="summary-container">
+                    <div class="summary-card">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <strong id="subtotal-display">$ 0,00</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>IVA (19%)</span>
+                            <strong id="iva-display">$ 0,00</strong>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row summary-total">
+                            <span>Total Devolución</span>
+                            <strong id="total-display" style="color: #fbbf24;">$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 ACCIONES
+            ====================================================== -->
+            <div class="form-actions">
+                <a href="{{ url_for('inventarios.inicio') }}" class="btn cancel">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
+
+                <button type="submit" class="btn save" id="btn-guardar-devolucion" style="background: linear-gradient(135deg, #d97706, #b45309);">
+                    <i class="fa-solid fa-rotate-left"></i> Guardar Devolución
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     MODAL DE RESUMEN Y CONFIRMACIÓN
+====================================================== -->
+<div id="modal-resumen-devolucion" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <span class="module-kicker" style="color: #fbbf24;">Confirmación</span>
+                <h3 style="margin: 3px 0 0 0; font-size: 20px; color: #fff;">Resumen de Devolución</h3>
+            </div>
+            <div class="invoice-number" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
+                <span>No. Devolución</span>
+                <strong id="modal-numero-doc" style="color: #fbbf24;">{{ consecutivo_de }}</strong>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            
+            <div class="modal-info-grid">
+                <div class="modal-info-item">
+                    <span>Documento:</span>
+                    <strong>Devolución de Clientes</strong>
+                </div>
+                <div class="modal-info-item">
+                    <span>Factura Asociada:</span>
+                    <strong id="modal-factura-texto">-</strong>
+                </div>
+                <div class="modal-info-item">
+                    <span>Cliente:</span>
+                    <strong id="modal-cliente-texto">-</strong>
+                </div>
+                <div class="modal-info-item">
+                    <span>Motivo:</span>
+                    <strong id="modal-motivo-texto">-</strong>
+                </div>
+            </div>
+
+            <!-- Tabla de productos modal -->
+            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #252b3d; border-radius: 10px; margin-bottom: 15px;">
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant. Devuelta</th>
+                            <th>Valor Unit.</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tabla-items">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totales modal -->
+            <div class="modal-totales">
+                <div>Subtotal: <strong id="modal-subtotal">$ 0,00</strong></div>
+                <div>IVA: <strong id="modal-iva">$ 0,00</strong></div>
+                <div class="modal-total-destacado" style="color: #fbbf24 !important;">Total Devolución: <strong id="modal-total" style="color: #fbbf24 !important;">$ 0,00</strong></div>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" id="btn-modal-cancelar" class="btn-modal-cancel">
+                <i class="fa-solid fa-arrow-left"></i> Modificar Devolución
+            </button>
+            <button type="button" id="btn-modal-confirmar" class="btn-modal-confirm" style="background: linear-gradient(135deg, #d97706, #b45309);">
+                <i class="fa-solid fa-check"></i> Confirmar y Reintegrar Stock
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.sigmaferFacturas = {{ facturas | tojson }};
+window.sigmaferClientes = {{ clientes | tojson }};
+window.sigmaferProductos = {{ productos | tojson }};
+window.consecutivoDE = "{{ consecutivo_de }}";
+</script>
+<script src="{{ url_for('static', filename='js/inventarios/crear_devolucion.js') }}"></script>
+{% endblock %}

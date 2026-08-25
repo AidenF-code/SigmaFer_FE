@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"content="width=device-width, initial-scale=1.0">
+    <title>SigmaFer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estyles/index.css') }}">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <section class="glass-panel">
+
+            <!-- Decoraciones -->
+            <span class="shine shine-top"></span>
+            <span class="shine shine-bottom"></span>
+            <span class="glass-light"></span>
+
+            <!-- Línea divisoria -->
+            <div class="divider"></div>
+
+            <!-- Panel izquierdo -->
+            <div class="left-panel">
+
+                <img
+                    class="logo"
+                    src="{{ url_for('static', filename='imagenes/logo-login-sigmafer.png') }}"
+                    alt="Logo SigmaFer">
+
+            </div>
+
+            <!-- Panel derecho -->
+            <div class="right-panel">
+
+                <article class="login-card">
+
+                    <h1>Iniciar sesión</h1>
+
+                    <form action="#" method="post">
+
+                        <!-- Correo -->
+                        <div class="input-group">
+
+                            <i class="fa-solid fa-envelope"></i>
+
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="Correo electrónico"
+                                autocomplete="email"
+                                required>
+
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="input-group">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                name="password"
+                                placeholder="Contraseña"
+                                autocomplete="current-password"
+                                required>
+
+                        </div>
+
+                        <a href="{{ url_for('dashboard.dashboard') }}" class="btn-submit">
+
+                            Ingresar
+
+                        </a>
+
+                    </form>
+
+                </article>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

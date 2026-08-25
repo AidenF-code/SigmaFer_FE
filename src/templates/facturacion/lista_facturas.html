@@ -1,0 +1,260 @@
+{% extends 'facturacion/base_facturacion.html' %}
+
+{% block title %}Modulo de facturacion{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/facturacion/lista_facturas.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+
+        <h2>Facturas</h2>
+
+        <div class="window-actions">
+
+            <a
+                href="{{ url_for('facturacion.inicio') }}"
+                class="btn-close-pro"
+                title="Volver">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <input
+            type="text"
+            class="search"
+            id="search-factura"
+            name="q"
+            placeholder="Buscar factura, cliente o vendedor..."
+            autocomplete="off">
+
+
+        <a
+            href="{{ url_for('facturacion.crear_factura') }}"
+            class="btn-new">
+
+            <i class="fa-solid fa-plus"></i>
+            Nueva factura
+
+        </a>
+
+
+        <div class="filters">
+
+            <select name="estado" id="filtro-estado">
+                <option value="">Todos los estados</option>
+                <option value="1">Pagada</option>
+                <option value="0">Pendiente</option>
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLA -->
+    <div class="table-header">
+
+        <span>No.</span>
+
+        <span>Fecha</span>
+
+        <span>Factura</span>
+
+        <span>Cliente</span>
+
+        <span>Vendedor</span>
+
+        <span>Método de pago</span>
+
+        <span>Total</span>
+
+        <span>Estado</span>
+
+        <span>Acciones</span>
+
+    </div>
+
+
+    <!-- CUERPO -->
+    <div class="table-body" id="facturas-tbody">
+
+        {% for factura in facturas %}
+
+        <div class="row"
+             data-numero="{{ (factura.numero_factura or '') | lower }}"
+             data-cliente="{{ (factura.cliente or '') | lower }}"
+             data-vendedor="{{ (factura.vendedor or '') | lower }}"
+             data-metodo="{{ (factura.metodo_pago or '') | lower }}"
+             data-estado="{{ '1' if factura.estado_pago else '0' }}">
+
+            <span>
+                {{ loop.index }}
+            </span>
+
+
+            <span>
+                {{ factura.fecha or factura.fecha_emision or '' }}
+            </span>
+
+
+            <span>
+                {{ factura.numero_factura }}
+            </span>
+
+
+            <span>
+                {{ factura.cliente }}
+            </span>
+
+
+            <span>
+                {{ factura.vendedor }}
+            </span>
+
+
+            <span>
+                {{ factura.metodo_pago }}
+            </span>
+
+
+            <span>
+                $ {{ factura.total }}
+            </span>
+
+
+            <span>
+
+                {% if factura.estado_pago %}
+
+                    <span class="status-badge paid">
+                        Pagada
+                    </span>
+
+                {% else %}
+
+                    <span class="status-badge pending">
+                        Pendiente
+                    </span>
+
+                {% endif %}
+
+            </span>
+
+
+            <!-- ACCIONES -->
+
+            <div class="actions">
+
+                <a
+                    class="btn-action view"
+                    href="{{ url_for(
+                        'facturacion.ver_factura',
+                        id=factura.id
+                    ) }}"
+                    title="Ver detalle de factura">
+
+                    <i class="fa-solid fa-eye"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-row">
+
+            <i class="fa-solid fa-file-invoice"></i>
+
+            <span>
+                No hay facturas registradas.
+            </span>
+
+        </div>
+
+        {% endfor %}
+
+        <!-- Mensaje cuando el filtro no arroja resultados -->
+        <div id="no-results-facturas" class="empty-row" style="display: none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>No se encontraron facturas con los filtros seleccionados.</span>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("search-factura");
+    const filtroEstado = document.getElementById("filtro-estado");
+    const rows = document.querySelectorAll("#facturas-tbody .row");
+    const noResults = document.getElementById("no-results-facturas");
+
+    function normalizar(texto) {
+        return (texto || "")
+            .trim()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function aplicarFiltrosFacturas() {
+        const query = normalizar(searchInput.value);
+        const estado = filtroEstado.value;
+
+        let coincidencias = 0;
+
+        rows.forEach(row => {
+            const numero = normalizar(row.dataset.numero);
+            const cliente = normalizar(row.dataset.cliente);
+            const vendedor = normalizar(row.dataset.vendedor);
+            const metodo = normalizar(row.dataset.metodo);
+            const estadoRow = row.dataset.estado;
+
+            const coincideTexto = !query ||
+                numero.includes(query) ||
+                cliente.includes(query) ||
+                vendedor.includes(query) ||
+                metodo.includes(query);
+
+            const coincideEstado = (estado === "") || (estadoRow === estado);
+
+            if (coincideTexto && coincideEstado) {
+                row.style.display = "grid";
+                coincidencias++;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        if (noResults) {
+            noResults.style.display = (rows.length > 0 && coincidencias === 0) ? "flex" : "none";
+        }
+    }
+
+    if (searchInput) searchInput.addEventListener("input", aplicarFiltrosFacturas);
+    if (filtroEstado) filtroEstado.addEventListener("change", aplicarFiltrosFacturas);
+});
+</script>
+{% endblock %}

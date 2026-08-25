@@ -1,0 +1,1285 @@
+/* ========================================== */
+/* RESET */
+/* ========================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body {
+
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    color: #ffffff;
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(38, 78, 180, .15),
+            transparent 35%
+        ),
+
+        radial-gradient(
+            circle at 80% 70%,
+            rgba(30, 70, 160, .12),
+            transparent 35%
+        ),
+
+        #03091c;
+}
+
+
+/* ========================================== */
+/* NAVBAR */
+/* ========================================== */
+
+.navbar {
+
+    height: 108px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 28px;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.08);
+
+    background:
+        rgba(3, 9, 28, .82);
+
+    backdrop-filter: blur(20px);
+
+    -webkit-backdrop-filter: blur(20px);
+
+}
+
+
+/* ========================================== */
+/* LOGO */
+/* ========================================== */
+
+.brand {
+
+    display: flex;
+
+    align-items: center;
+
+    width: 200px;
+
+    text-decoration: none;
+
+}
+
+
+.brand img {
+
+    width: 190px;
+
+    height: auto;
+
+    object-fit: contain;
+
+}
+
+
+/* ========================================== */
+/* NAV MENU */
+/* ========================================== */
+
+.nav-menu {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    flex: 1;
+
+}
+
+
+/* ========================================== */
+/* NAV ITEM */
+/* ========================================== */
+
+.nav-item {
+
+    height: 58px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 0 17px;
+
+    border-radius: 12px;
+
+    text-decoration: none;
+
+    color: #e8ebf7;
+
+    background:
+        rgba(255,255,255,.025);
+
+    border:
+        1px solid rgba(255,255,255,.06);
+
+    transition: .3s;
+
+    white-space: nowrap;
+
+}
+
+
+.nav-item i {
+
+    font-size: 17px;
+
+}
+
+
+.nav-item .arrow {
+
+    font-size: 10px;
+
+    margin-left: 2px;
+
+}
+
+
+/* ========================================== */
+/* HOVER */
+/* ========================================== */
+
+.nav-item:hover {
+
+    background:
+        rgba(255,255,255,.07);
+
+    border-color:
+        rgba(100,145,255,.25);
+
+    transform:
+        translateY(-1px);
+
+}
+
+
+/* ========================================== */
+/* ITEM ACTIVO */
+/* ========================================== */
+
+.nav-item.active {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(65,90,220,.32),
+            rgba(45,70,180,.15)
+        );
+
+    border:
+        1px solid rgba(80,110,255,.45);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 0 20px rgba(60,100,255,.12);
+
+    color: #ffffff;
+
+}
+
+
+.nav-item.active i:first-child {
+
+    color: #7e9cff;
+
+}
+
+
+/* ========================================== */
+/* USUARIO */
+/* ========================================== */
+
+.user-menu {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    margin-left: 20px;
+
+    white-space: nowrap;
+
+}
+
+
+.avatar {
+
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    font-weight: 600;
+
+    background:
+        linear-gradient(
+            135deg,
+            #596cff,
+            #354de0
+        );
+
+}
+
+
+.user-menu > i {
+
+    font-size: 11px;
+
+    color: #7280a7;
+
+}
+
+
+/* ========================================== */
+/* DASHBOARD */
+/* ========================================== */
+
+.dashboard {
+
+    width: min(1440px, 92vw);
+
+    margin: 0 auto;
+
+    flex: 1;
+
+    padding:
+        50px 0 80px;
+
+}
+
+
+/* ========================================== */
+/* HEADER */
+/* ========================================== */
+
+.dashboard-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 45px;
+
+}
+
+
+.dashboard-header h1 {
+
+    font-size: 32px;
+
+    font-weight: 700;
+
+    letter-spacing: -.5px;
+
+}
+
+
+.dashboard-header p {
+
+    margin-top: 8px;
+
+    color: #8995b7;
+
+    font-size: 18px;
+
+}
+
+
+/* ========================================== */
+/* FECHA */
+/* ========================================== */
+
+.date-box {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding:
+        16px 22px;
+
+    border-radius: 13px;
+
+    background:
+        rgba(255,255,255,.025);
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    color: #e7eaf5;
+
+}
+
+
+.date-box i {
+
+    color: #8b9cff;
+
+    font-size: 20px;
+
+}
+
+
+/* ========================================== */
+/* GRID */
+/* ========================================== */
+
+.dashboard-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 25px;
+
+}
+
+
+
+/* ========================================== */
+/* FOOTER */
+/* ========================================== */
+
+.footer {
+
+    height: 100px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-top:
+        1px solid rgba(255,255,255,.07);
+
+    color: #697592;
+
+    font-size: 16px;
+
+}
+
+
+/* ========================================== */
+/* RESPONSIVE */
+/* ========================================== */
+
+@media (max-width: 1200px) {
+
+    .nav-menu {
+
+        gap: 5px;
+
+    }
+
+    .nav-item {
+
+        padding:
+            0 11px;
+
+    }
+
+    .nav-item span {
+
+        font-size: 14px;
+
+    }
+
+}
+
+
+@media (max-width: 950px) {
+
+    .dashboard-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .nav-menu {
+
+        display: none;
+
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .dashboard {
+
+        width: 90vw;
+
+        padding-top: 30px;
+
+    }
+
+    .dashboard-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 20px;
+
+    }
+
+    .dashboard-header h1 {
+
+        font-size: 25px;
+
+    }
+
+    .glass-panel {
+
+        padding: 20px;
+
+    }
+
+    .panel-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+
+    }
+
+    .order-date {
+
+        display: none;
+
+    }
+
+    .username {
+
+        display: none;
+
+    }
+
+}
+
+/* ========================================== */
+/* DROPDOWN PRODUCTOS */
+/* ========================================== */
+
+.dropdown {
+
+    position: relative;
+
+}
+
+
+/* ========================================== */
+/* FLECHA */
+/* ========================================== */
+
+.dropdown .arrow {
+
+    transition: transform .3s ease;
+
+}
+
+
+/* ========================================== */
+/* SUBMENU */
+/* ========================================== */
+
+.submenu {
+
+    position: absolute;
+
+    top: calc(100% + 10px);
+
+    left: 0;
+
+    min-width: 230px;
+
+    padding: 8px;
+
+    margin: 0;
+
+    list-style: none;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+    /* Glass */
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(35, 48, 100, .90),
+            rgba(10, 18, 50, .94)
+        );
+
+    backdrop-filter: blur(22px);
+
+    -webkit-backdrop-filter: blur(22px);
+
+    border:
+        1px solid rgba(130, 155, 255, .18);
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 20px 45px rgba(0,0,0,.40),
+        inset 0 1px 0 rgba(255,255,255,.08);
+
+    /* Oculto inicialmente */
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transform:
+        translateY(-8px);
+
+    transition:
+        opacity .25s ease,
+        transform .25s ease,
+        visibility .25s ease;
+
+    z-index: 1000;
+
+}
+
+
+/* ========================================== */
+/* BORDE ILUMINADO */
+/* ========================================== */
+
+.submenu::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    padding: 1px;
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(120, 155, 255, .35),
+            transparent 45%
+        );
+
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+
+    -webkit-mask-composite: xor;
+
+    mask-composite: exclude;
+
+    pointer-events: none;
+
+}
+
+
+/* ========================================== */
+/* MOSTRAR SUBMENU */
+/* ========================================== */
+
+.dropdown:hover .submenu {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform:
+        translateY(0);
+
+}
+
+
+/* ========================================== */
+/* GIRAR FLECHA */
+/* ========================================== */
+
+.dropdown:hover .arrow {
+
+    transform:
+        rotate(180deg);
+
+}
+
+
+/* ========================================== */
+/* OPCIONES DEL SUBMENU */
+/* ========================================== */
+
+.submenu li {
+
+    width: 100%;
+
+}
+
+
+.submenu li a {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    width: 100%;
+
+    min-height: 48px;
+
+    padding:
+        0 14px;
+
+    border-radius: 10px;
+
+    text-decoration: none;
+
+    color: #e8ecff;
+
+    font-size: 14px;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        transform .25s ease;
+
+}
+
+
+/* ========================================== */
+/* ICONOS */
+/* ========================================== */
+
+.submenu li a i {
+
+    width: 20px;
+
+    text-align: center;
+
+    color: #7f9cff;
+
+    font-size: 15px;
+
+    transition:
+        color .25s ease,
+        transform .25s ease;
+
+}
+
+
+/* ========================================== */
+/* HOVER OPCIÓN */
+/* ========================================== */
+
+.submenu li a:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(75, 110, 230, .25),
+            rgba(75, 110, 230, .08)
+        );
+    color: #ffffff;
+    transform: translateX(3px);
+
+}
+
+
+/* ========================================== */
+/* HOVER ICONO */
+/* ========================================== */
+
+.submenu li a:hover i {
+
+    color: #9eb5ff;
+    transform: scale(1.1);
+
+}
+
+
+/* ========================================== */
+/* LÍNEA DECORATIVA */
+/* ========================================== */
+
+.submenu li a::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+
+    top: 50%;
+
+    width: 3px;
+
+    height: 0;
+
+    border-radius: 5px;
+
+    background: #6f91ff;
+
+    transform:
+        translateY(-50%);
+
+    transition:
+        height .25s ease;
+
+}
+
+
+.submenu li a:hover::before {
+
+    height: 24px;
+
+}
+
+/* ========================================== */
+/* NAV MENU */
+/* ========================================== */
+
+.nav-menu {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    flex: 1;
+
+    list-style: none;
+
+    margin: 0;
+
+    padding: 0;
+}
+
+
+/* Elementos del menú */
+
+.nav-menu > li {
+
+    list-style: none;
+
+}
+
+/* ========================================== */
+/* SUBMENU NIVEL 2 */
+/* ========================================== */
+
+.dropdown-sub {
+    position: relative;
+}
+
+
+/* Elemento principal del segundo nivel */
+
+.submenu-item {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    width: 100%;
+
+    min-height: 48px;
+
+    padding: 0 14px;
+
+    border-radius: 10px;
+
+    color: #e8ecff;
+
+    text-decoration: none;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        transform .25s ease;
+}
+
+
+/* Flecha */
+
+.sub-arrow {
+
+    margin-left: auto;
+
+    font-size: 11px;
+
+    transition:
+        transform .25s ease;
+}
+
+
+/* ========================================== */
+/* SUBMENU-SUB */
+/* ========================================== */
+
+.submenu-sub {
+
+    position: absolute;
+
+    top: 0;
+
+    left: calc(100% + 8px);
+
+    min-width: 170px;
+
+    padding: 8px;
+
+    margin: 0;
+
+    list-style: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(35, 48, 100, .94),
+            rgba(10, 18, 50, .97)
+        );
+
+    backdrop-filter: blur(22px);
+
+    -webkit-backdrop-filter: blur(22px);
+
+    border: 1px solid rgba(130, 155, 255, .18);
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .40),
+        inset 0 1px 0 rgba(255, 255, 255, .08);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transform: translateX(-8px);
+
+    transition:
+        opacity .25s ease,
+        transform .25s ease,
+        visibility .25s ease;
+
+    z-index: 1001;
+}
+
+
+/* ========================================== */
+/* MOSTRAR NIVEL 2 */
+/* ========================================== */
+
+.dropdown-sub:hover > .submenu-sub {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform: translateX(0);
+
+}
+
+
+/* ========================================== */
+/* FLECHA NIVEL 2 */
+/* ========================================== */
+
+.dropdown-sub:hover > .submenu-item .sub-arrow {
+
+    transform: translateX(3px);
+
+}
+
+
+/* ========================================== */
+/* OPCIONES NIVEL 2 */
+/* ========================================== */
+
+.submenu-sub li a {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    min-height: 42px;
+
+    padding: 0 12px;
+
+    border-radius: 9px;
+
+    color: #e8ecff;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    transition:
+        background .25s ease,
+        transform .25s ease;
+}
+
+
+.submenu-sub li a i {
+
+    width: 18px;
+
+    text-align: center;
+
+    color: #7f9cff;
+
+}
+
+
+/* Hover */
+
+.submenu-sub li a:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(75, 110, 230, .25),
+            rgba(75, 110, 230, .08)
+        );
+
+    transform: translateX(3px);
+
+}
+
+
+
+
+/* ========================================== */
+/* MENU USUARIO */
+/* ========================================== */
+
+.user-menu {
+
+    position: relative;
+
+}
+
+
+/* ========================================== */
+/* PERFIL */
+/* ========================================== */
+
+.user-profile {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 7px 12px 7px 7px;
+
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    transition:
+        background .25s ease,
+        box-shadow .25s ease;
+
+}
+
+
+.user-profile:hover {
+
+    background:
+        rgba(255, 255, 255, .06);
+
+}
+
+
+/* ========================================== */
+/* AVATAR */
+/* ========================================== */
+
+.avatar {
+
+    width: 42px;
+
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #6f91ff,
+            #4771e8
+        );
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    box-shadow:
+        0 5px 15px rgba(60, 100, 240, .30);
+
+}
+
+
+/* ========================================== */
+/* NOMBRE */
+/* ========================================== */
+
+.username {
+
+    color: #f1f4ff;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+}
+
+
+/* ========================================== */
+/* FLECHA */
+/* ========================================== */
+
+.user-arrow {
+
+    color: #7f8bb5;
+
+    font-size: 11px;
+
+    transition:
+        transform .25s ease,
+        color .25s ease;
+
+}
+
+
+/* ========================================== */
+/* DROPDOWN */
+/* ========================================== */
+
+.user-dropdown {
+
+    position: absolute;
+
+    top: calc(100% + 10px);
+
+    right: 0;
+
+    min-width: 190px;
+
+    padding: 8px;
+
+    margin: 0;
+
+    list-style: none;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(35, 48, 100, .94),
+            rgba(10, 18, 50, .97)
+        );
+
+    backdrop-filter: blur(22px);
+
+    -webkit-backdrop-filter: blur(22px);
+
+    border:
+        1px solid rgba(130, 155, 255, .18);
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 20px 45px rgba(0, 0, 0, .40),
+        inset 0 1px 0 rgba(255, 255, 255, .08);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transform:
+        translateY(-8px);
+
+    transition:
+        opacity .25s ease,
+        transform .25s ease,
+        visibility .25s ease;
+
+    z-index: 1000;
+
+}
+
+
+/* ========================================== */
+/* MOSTRAR MENU */
+/* ========================================== */
+
+.user-menu:hover .user-dropdown {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform:
+        translateY(0);
+
+}
+
+
+/* ========================================== */
+/* GIRAR FLECHA */
+/* ========================================== */
+
+.user-menu:hover .user-arrow {
+
+    transform:
+        rotate(180deg);
+
+    color: #9eb5ff;
+
+}
+
+
+/* ========================================== */
+/* OPCIÓN SALIR */
+/* ========================================== */
+
+.user-dropdown li {
+
+    list-style: none;
+
+}
+
+
+.user-dropdown li a {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    min-height: 44px;
+
+    padding: 0 13px;
+
+    border-radius: 10px;
+
+    color: #e8ecff;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        transform .25s ease;
+
+}
+
+
+/* ========================================== */
+/* ICONO */
+/* ========================================== */
+
+.user-dropdown li a i {
+
+    width: 20px;
+
+    text-align: center;
+
+    color: #ff7777;
+
+}
+
+
+/* ========================================== */
+/* HOVER SALIR */
+/* ========================================== */
+
+.user-dropdown li a:hover {
+
+    background:
+        rgba(220, 70, 70, .12);
+
+    color: #ff8b8b;
+
+    transform:
+        translateX(3px);
+
+}
+
+.navbar {
+    position: relative;
+    z-index: 1000;
+}

@@ -1,0 +1,66 @@
+{% extends 'facturacion/base_facturacion.html' %}
+
+{% block title %}Modulo de facturacion{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_productos.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card wide">
+
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Crear Cliente</h2>
+        </div>
+
+        <!-- FORM -->
+        <div class="module-body">
+
+            <form class="form-grid" method="POST">
+
+                <select name="tipo_documento" required>
+                            <option value="CC">Cédula</option>
+                            <option value="CE">Cédula extranjería</option>
+                            <option value="NIT">NIT</option>
+                </select>
+
+
+                <input type="text" name="numero_identificacion" placeholder="Numero de identificacion" required>
+                <input type="text" name="razon_social"  placeholder="Razon social" required>
+                <input type="text" name="nombre" placeholder="Nombre de contacto" required>
+                <input type="text" name="telefono" placeholder="Teléfono">
+                <input type="email" name="correo" placeholder="correo@cliente.com" required>
+                <input type="text" name="direccion" placeholder="Dirección cliente" required>
+                <select name="estado" required>
+                    <option value="1" selected>Activo</option>
+                    <option value="0">Inactivo</option>
+                </select>
+
+
+            <!-- BOTONES -->
+                <div class="form-actions">
+
+                    <a href="{{ url_for('facturacion.inicio') }}" class="btn cancel">Cancelar</a>
+
+                <button type="submit" class="btn save">Guardar</button>
+
+            </div>
+
+        </form>
+        {% if error %}
+            <div class="form-error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+    </div>
+
+</div>
+        
+            
+{% endblock %}

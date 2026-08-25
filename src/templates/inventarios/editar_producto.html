@@ -1,0 +1,106 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Editar Producto{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_productos.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    
+    <div class="module-card">
+        
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Editar Producto</h2>
+            
+            <div class="window-actions">
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="dot red"></span>
+            </div>
+        </div>
+        
+        <!-- CUERPO -->
+        <div class="module-body">
+            
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px;"></i>
+                <span><strong>Error:</strong> {{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form class="form-grid" method="POST" action="{{ url_for('inventarios.editar_producto', id=producto.id) }}">
+                
+                <!-- CAMPOS FIJOS (SOLO LECTURA) -->
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">Código (Fijo)</label>
+                    <input type="text" value="{{ producto.codigo }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">Nombre del Producto (Fijo)</label>
+                    <input type="text" value="{{ producto.nombre }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">Categoría (Fija)</label>
+                    <input type="text" value="{{ producto.categoria or 'Sin categoría' }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <div>
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">Proveedor (Fijo)</label>
+                    <input type="text" value="{{ producto.proveedor or 'Sin proveedor' }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <div style="grid-column: 1 / -1;">
+                    <label style="color: rgba(255,255,255,0.6); font-size: 12px; margin-bottom: 6px; display: block;">Stock Actual (Fijo - Se altera por Facturas/Entradas)</label>
+                    <input type="text" value="{{ producto.stock }}" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <!-- CAMPOS EDITABLES -->
+                <div>
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Stock Mínimo *</label>
+                    <input type="number" name="stock_minimo" placeholder="Stock mínimo" step="0.01" min="0" value="{{ producto.stock_minimo }}" required>
+                </div>
+
+                <div>
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Stock Máximo</label>
+                    <input type="number" name="stock_maximo" placeholder="Stock máximo" step="0.01" min="0" value="{{ producto.stock_maximo or '' }}">
+                </div>
+
+                <div>
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Precio de Venta ($) *</label>
+                    <input type="number" name="precio" placeholder="Precio" step="0.01" min="0.01" value="{{ producto.precio }}" required>
+                </div>
+
+                <div>
+                    <label style="color: #60a5fa; font-size: 12px; margin-bottom: 6px; display: block; font-weight: 600;">Estado *</label>
+                    <select name="estado" required>
+                        <option value="1" {% if producto.estado %}selected{% endif %}>Activo</option>
+                        <option value="0" {% if not producto.estado %}selected{% endif %}>Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="form-actions" style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <a href="{{ url_for('inventarios.lista_productos') }}" class="btn cancel">
+                        Cancelar
+                    </a>
+                    
+                    <button type="submit" class="btn save" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+                        Guardar Cambios
+                    </button>
+                </div>
+                
+            </form>
+  
+        </div>
+        
+    </div>
+    
+</div>
+
+{% endblock %}

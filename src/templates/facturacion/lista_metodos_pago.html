@@ -1,0 +1,148 @@
+{% extends 'facturacion/base_facturacion.html' %}
+
+{% block title %}Lista métodos de pago{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{{ url_for(
+        'static',
+        filename='estyles/facturacion/lista_metodos_pago.css'
+    ) }}">
+{% endblock %}
+
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+
+        <h2>Métodos de pago</h2>
+
+        <div class="window-actions">
+
+            <a
+                href="{{ url_for('facturacion.inicio') }}"
+                class="btn-close-pro">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <a
+            href="{{ url_for('facturacion.crear_metodos_pago') }}"
+            class="btn-new">
+
+            + Nuevo método de pago
+
+        </a>
+
+
+        <div class="filters">
+
+            <select>
+
+                <option>
+                    Estado
+                </option>
+
+                <option value="activo">
+                    Activo
+                </option>
+
+                <option value="inactivo">
+                    Inactivo
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLA -->
+    <div class="table-header">
+
+        <span>No.</span>
+        <span>Nombre</span>
+        <span>Estado</span>
+        <span>Acciones</span>
+
+    </div>
+
+
+    <div class="table-body">
+
+        {% for metodo in metodos %}
+
+        <div class="row">
+
+            <span>
+                {{ loop.index }}
+            </span>
+
+
+            <span>
+                {{ metodo.nombre }}
+            </span>
+
+
+            <span>
+
+                {% if metodo.estado %}
+                    Activo
+                {% else %}
+                    Inactivo
+                {% endif %}
+
+            </span>
+
+
+            <div class="actions">
+
+                <a
+                    class="btn-action edit"
+                    href="{{ url_for(
+                        'facturacion.crear_metodos_pago',
+                        id=metodo.id
+                    ) }}"
+                    title="Editar método de pago">
+
+                    <i class="fa-solid fa-pen"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-row">
+
+            <i class="fa-solid fa-credit-card"></i>
+
+            <span>
+                No hay métodos de pago registrados.
+            </span>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'administracion/base_administracion.html' %}
+
+{% block title %}Crear Usuario{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/crear_usuario.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card">
+
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Nuevo Rol</h2>
+        </div>
+
+        <!-- FORM -->
+        <div class="module-body">
+
+            <form class="form-grid" method="POST">
+
+                <input type="text" name="nombre" placeholder="Nombre del rol" required>
+
+                <div class="form-actions">
+
+                    <a href="{{ url_for('administracion.inicio')}}" class="btn cancel">Cancelar</a>
+
+                    <button type="submit" class="btn save">Guardar</button>
+
+                </div>
+
+            </form>
+            {% if error %}
+                <div class="form-error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+        </div>
+
+
+    </div>
+
+</div>
+
+{% endblock %}

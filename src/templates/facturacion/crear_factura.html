@@ -1,0 +1,1085 @@
+{% extends 'facturacion/base_facturacion.html' %}
+
+{% block title %}Elaboracion de facturas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='estyles/facturacion/crear_factura.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card wide">
+
+        <!-- =====================================================
+             ENCABEZADO DE FACTURA
+        ====================================================== -->
+
+        <div class="module-header">
+
+            <div class="module-header-title">
+
+                <span class="module-kicker">
+                    FACTURACIÓN
+                </span>
+
+                <h2>
+                    Factura de Venta
+                </h2>
+
+                <span class="module-subtitle">
+                    Elaboración de factura
+                </span>
+
+            </div>
+
+
+            <!-- CONSECUTIVO -->
+
+            <div class="invoice-number">
+
+                <span>
+                    No. Factura
+                </span>
+
+                <strong id="numero_factura">
+                    {{ numero_factura or 'FV-000001' }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('facturacion.crear_factura') }}"
+            id="form-factura"
+            autocomplete="off">
+
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 14px 20px; border-radius: 12px; margin: 15px 25px 0 25px; display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px;"></i>
+                <span><strong>Error al guardar:</strong> {{ error }}</span>
+            </div>
+            {% endif %}
+
+            <!-- =================================================
+                 INFORMACIÓN GENERAL
+            ================================================== -->
+
+            <section class="module-body">
+
+                <div class="section-title">
+
+                    <div>
+
+                        <i class="fa-solid fa-file-invoice"></i>
+
+                        <div>
+
+                            <h3>
+                                Información de la factura
+                            </h3>
+
+                            <span>
+                                Datos generales del documento
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-grid">
+
+
+                    <!-- =========================================
+                         FECHA Y HORA
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="fecha_emision">
+                            Fecha y hora
+                        </label>
+
+                        <input
+                            type="text"
+                            id="fecha_emision"
+                            name="fecha_emision"
+                            value="{{ fecha_hora or '' }}"
+                            placeholder="Se generará automáticamente"
+                            readonly>
+
+                        <small class="field-help">
+                            Se registra automáticamente al guardar.
+                        </small>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         VENDEDOR
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="usuario_id">
+                            Vendedor
+                        </label>
+
+                        <select
+                            id="usuario_id"
+                            name="usuario_id"
+                            required>
+
+                            <option value="">
+                                Seleccionar vendedor
+                            </option>
+
+                            {% for vendedor in vendedores %}
+
+                                <option value="{{ vendedor.id }}">
+                                    {{ vendedor.nombre }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <small class="field-help">
+                            Seleccione el vendedor responsable de la factura.
+                        </small>
+
+                    </div>
+
+
+
+                    <!-- =========================================
+                         MÉTODO DE PAGO
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="metodo_pago_id">
+                            Método de pago
+                        </label>
+
+                        <select
+                            id="metodo_pago_id"
+                            name="metodo_pago_id"
+                            required>
+
+                            <option value="">
+                                Seleccionar método de pago
+                            </option>
+
+                            {% for metodo in metodos_pago %}
+
+                                <option
+                                    value="{{ metodo.id }}">
+
+                                    {{ metodo.nombre }}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         CLIENTE - BÚSQUEDA
+                    ========================================== -->
+
+                    <div class="form-group form-group-wide">
+
+                        <label for="cliente_busqueda">
+                            Cliente
+                        </label>
+
+                        <div class="autocomplete-container">
+
+                            <div class="input-with-icon">
+
+                                <i class="fa-solid fa-magnifying-glass"></i>
+
+                                <input
+                                    type="text"
+                                    id="cliente_busqueda"
+                                    name="cliente_busqueda"
+                                    placeholder="Buscar por razón social, nombre o documento..."
+                                    autocomplete="off"
+                                    required>
+
+                            </div>
+
+
+                            <!-- ID REAL QUE SE ENVÍA AL BACKEND -->
+
+                            <input
+                                type="hidden"
+                                id="cliente_id"
+                                name="cliente_id">
+
+
+                            <!-- RESULTADOS DEL AUTOCOMPLETADO -->
+
+                            <div
+                                class="autocomplete-results"
+                                id="clientes-resultados">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         DOCUMENTO
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="numero_identificacion">
+
+                            Identificación
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="numero_identificacion"
+                            name="numero_identificacion"
+                            placeholder="Documento"
+                            readonly>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         RAZÓN SOCIAL
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="razon_social">
+
+                            Razón social
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="razon_social"
+                            name="razon_social"
+                            placeholder="Razón social"
+                            readonly>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         NOMBRE DEL CLIENTE
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="nombre_cliente">
+
+                            Nombre
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="nombre_cliente"
+                            name="nombre_cliente"
+                            placeholder="Nombre del cliente"
+                            readonly>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         TELÉFONO
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="telefono_cliente">
+
+                            Teléfono
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="telefono_cliente"
+                            name="telefono_cliente"
+                            placeholder="Teléfono"
+                            readonly>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         CORREO
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="correo_cliente">
+
+                            Correo
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="correo_cliente"
+                            name="correo_cliente"
+                            placeholder="Correo electrónico"
+                            readonly>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         DIRECCIÓN
+                    ========================================== -->
+
+                    <div class="form-group">
+
+                        <label for="direccion_cliente">
+
+                            Dirección
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="direccion_cliente"
+                            name="direccion_cliente"
+                            placeholder="Dirección"
+                            readonly>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         OBSERVACIONES
+                    ========================================== -->
+
+                    <div class="form-group full-width">
+
+                        <label for="observaciones">
+
+                            Observaciones
+
+                        </label>
+
+                        <textarea
+                            id="observaciones"
+                            name="observaciones"
+                            rows="3"
+                            maxlength="200"
+                            placeholder="Escriba aquí las observaciones de la factura..."></textarea>
+
+                        <small class="field-help">
+                            Máximo 200 caracteres.
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 PRODUCTOS
+            ================================================== -->
+
+            <section class="products-section">
+
+                <div class="section-title products-title">
+
+                    <div>
+
+                        <i class="fa-solid fa-boxes-stacked"></i>
+
+                        <div>
+
+                            <h3>
+                                Productos
+                            </h3>
+
+                            <span>
+                                Agregue los productos de la factura
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BOTÓN SECUNDARIO -->
+
+                    <button
+                        type="button"
+                        class="btn btn-add-product"
+                        id="btn-agregar-producto">
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Agregar línea
+
+                    </button>
+
+                </div>
+
+
+                <!-- =================================================
+                     TABLA DE PRODUCTOS
+                ================================================== -->
+
+                <div class="products-table-wrapper">
+
+                    <table class="products-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Código
+                                </th>
+
+                                <th>
+                                    Producto
+                                </th>
+
+                                <th>
+                                    Cantidad
+                                </th>
+
+                                <th>
+                                    Valor unitario
+                                </th>
+
+                                <th>
+                                    IVA %
+                                </th>
+
+                                <th>
+                                    Subtotal
+                                </th>
+
+                                <th>
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="tabla-productos">
+
+
+                            <!-- =================================================
+                                 FILA 1
+                            ================================================== -->
+
+                            <tr class="producto-row">
+
+                                <td>
+
+                                    <input
+                                        type="text"
+                                        name="codigo[]"
+                                        class="producto-codigo"
+                                        placeholder="Código"
+                                        autocomplete="off">
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="autocomplete-container">
+
+                                        <input
+                                            type="text"
+                                            name="producto_nombre[]"
+                                            class="producto-nombre"
+                                            placeholder="Buscar producto..."
+                                            autocomplete="off">
+
+                                        <input
+                                            type="hidden"
+                                            name="producto_id[]"
+                                            class="producto-id">
+
+                                        <div
+                                            class="autocomplete-results productos-resultados">
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <input
+                                        type="number"
+                                        name="cantidad[]"
+                                        class="producto-cantidad"
+                                        min="1"
+                                        step="1"
+                                        value="1">
+
+                                </td>
+
+
+                                <td>
+
+                                    <input
+                                        type="number"
+                                        name="valor_unitario[]"
+                                        class="producto-precio"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0.00">
+
+                                </td>
+
+
+                                <td>
+
+                                    <select
+                                        name="iva_porcentaje[]"
+                                        class="producto-iva">
+
+                                        <option value="0">
+                                            0%
+                                        </option>
+
+                                        <option value="5">
+                                            5%
+                                        </option>
+
+                                        <option
+                                            value="19"
+                                            selected>
+                                            19%
+                                        </option>
+
+                                    </select>
+
+                                </td>
+
+
+                                <td>
+
+                                    <input
+                                        type="text"
+                                        name="subtotal[]"
+                                        class="producto-subtotal"
+                                        value="$ 0,00"
+                                        readonly>
+
+                                </td>
+
+
+                                <td class="action-cell">
+
+                                    <button
+                                        type="button"
+                                        class="btn-delete-product"
+                                        title="Eliminar línea">
+
+                                        <i class="fa-solid fa-trash"></i>
+
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 FILA 2
+                            ================================================== -->
+
+                            <tr class="producto-row">
+
+                                <td>
+
+                                    <input
+                                        type="text"
+                                        name="codigo[]"
+                                        class="producto-codigo"
+                                        placeholder="Código"
+                                        autocomplete="off">
+
+                                </td>
+
+                                <td>
+
+                                    <div class="autocomplete-container">
+
+                                        <input
+                                            type="text"
+                                            name="producto_nombre[]"
+                                            class="producto-nombre"
+                                            placeholder="Buscar producto..."
+                                            autocomplete="off">
+
+                                        <input
+                                            type="hidden"
+                                            name="producto_id[]"
+                                            class="producto-id">
+
+                                        <div
+                                            class="autocomplete-results productos-resultados">
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+
+                                    <input
+                                        type="number"
+                                        name="cantidad[]"
+                                        class="producto-cantidad"
+                                        min="1"
+                                        step="1"
+                                        value="1">
+
+                                </td>
+
+                                <td>
+
+                                    <input
+                                        type="number"
+                                        name="valor_unitario[]"
+                                        class="producto-precio"
+                                        min="0"
+                                        step="0.01">
+
+                                </td>
+
+                                <td>
+
+                                    <select
+                                        name="iva_porcentaje[]"
+                                        class="producto-iva">
+
+                                        <option value="0">
+                                            0%
+                                        </option>
+
+                                        <option value="5">
+                                            5%
+                                        </option>
+
+                                        <option value="19" selected>
+                                            19%
+                                        </option>
+
+                                    </select>
+
+                                </td>
+
+                                <td>
+
+                                    <input
+                                        type="text"
+                                        name="subtotal[]"
+                                        class="producto-subtotal"
+                                        value="$ 0,00"
+                                        readonly>
+
+                                </td>
+
+                                <td class="action-cell">
+
+                                    <button
+                                        type="button"
+                                        class="btn-delete-product"
+                                        title="Eliminar línea">
+
+                                        <i class="fa-solid fa-trash"></i>
+
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- =================================================
+                                 FILAS 3, 4 Y 5
+                            ================================================== -->
+
+                            {% for i in range(3) %}
+
+                            <tr class="producto-row">
+
+                                <td>
+
+                                    <input
+                                        type="text"
+                                        name="codigo[]"
+                                        class="producto-codigo"
+                                        placeholder="Código"
+                                        autocomplete="off">
+
+                                </td>
+
+                                <td>
+
+                                    <div class="autocomplete-container">
+
+                                        <input
+                                            type="text"
+                                            name="producto_nombre[]"
+                                            class="producto-nombre"
+                                            placeholder="Buscar producto..."
+                                            autocomplete="off">
+
+                                        <input
+                                            type="hidden"
+                                            name="producto_id[]"
+                                            class="producto-id">
+
+                                        <div
+                                            class="autocomplete-results productos-resultados">
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+
+                                    <input
+                                        type="number"
+                                        name="cantidad[]"
+                                        class="producto-cantidad"
+                                        min="1"
+                                        step="1"
+                                        value="1">
+
+                                </td>
+
+                                <td>
+
+                                    <input
+                                        type="number"
+                                        name="valor_unitario[]"
+                                        class="producto-precio"
+                                        min="0"
+                                        step="0.01">
+
+                                </td>
+
+                                <td>
+
+                                    <select
+                                        name="iva_porcentaje[]"
+                                        class="producto-iva">
+
+                                        <option value="0">
+                                            0%
+                                        </option>
+
+                                        <option value="5">
+                                            5%
+                                        </option>
+
+                                        <option
+                                            value="19"
+                                            selected>
+                                            19%
+                                        </option>
+
+                                    </select>
+
+                                </td>
+
+                                <td>
+
+                                    <input
+                                        type="text"
+                                        name="subtotal[]"
+                                        class="producto-subtotal"
+                                        value="$ 0,00"
+                                        readonly>
+
+                                </td>
+
+                                <td class="action-cell">
+
+                                    <button
+                                        type="button"
+                                        class="btn-delete-product"
+                                        title="Eliminar línea">
+
+                                        <i class="fa-solid fa-trash"></i>
+
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- =================================================
+                     AYUDA
+                ================================================== -->
+
+                <div class="products-help">
+
+                    <i class="fa-solid fa-keyboard"></i>
+
+                    <span>
+                        Puede buscar por código o nombre del producto.
+                        Presione <strong>Enter</strong> para avanzar a la siguiente línea.
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 TOTALES
+            ================================================== -->
+
+            <section class="invoice-summary">
+
+                <div class="summary-container">
+
+
+                    <!-- INFORMACIÓN -->
+
+                    <div class="summary-note">
+
+                        <div class="summary-note-icon">
+
+                            <i class="fa-solid fa-calculator"></i>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Resumen de factura
+                            </strong>
+
+                            <span>
+                                Los valores se calculan automáticamente
+                                según los productos agregados.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- TOTALES -->
+
+                    <div class="totals">
+
+
+                        <div class="total-row">
+
+                            <span>
+                                Subtotal
+                            </span>
+
+                            <strong id="subtotal">
+                                $ 0,00
+                            </strong>
+
+                        </div>
+
+
+                        <div class="total-row">
+
+                            <span>
+                                IVA
+                            </span>
+
+                            <strong id="total_iva">
+                                $ 0,00
+                            </strong>
+
+                        </div>
+
+
+                        <div class="total-row total-final">
+
+                            <span>
+                                Total factura
+                            </span>
+
+                            <strong id="total_documento">
+                                $ 0,00
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 BOTONES
+            ================================================== -->
+
+            <div class="form-actions">
+
+
+                <a
+                    href="{{ url_for('facturacion.inicio') }}"
+                    class="btn cancel">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                    Cancelar
+
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn save"
+                    id="btn-guardar-factura">
+
+                    <i class="fa-solid fa-file-circle-check"></i>
+
+                    Guardar factura
+
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     MODAL EMERGENTE - RESUMEN DE FACTURA
+====================================================== -->
+<div id="modal-resumen-factura" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <span class="module-kicker" style="color: #60a5fa; font-size: 11px; font-weight: 600; text-transform: uppercase;">Confirmación</span>
+                <h3 style="margin: 3px 0 0 0; font-size: 20px; color: #fff;">Resumen de Factura</h3>
+            </div>
+            <div class="invoice-number">
+                <span style="font-size: 11px; color: #94a3b8;">No. Factura</span>
+                <strong id="modal-numero-factura" style="font-size: 16px; color: #38bdf8;">{{ numero_factura or 'FV-000001' }}</strong>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <!-- Datos Generales -->
+            <div class="modal-grid-info">
+                <div>
+                    <label>Cliente:</label>
+                    <span id="modal-cliente-nombre">-</span>
+                </div>
+                <div>
+                    <label>Identificación:</label>
+                    <span id="modal-cliente-doc">-</span>
+                </div>
+                <div>
+                    <label>Vendedor:</label>
+                    <span id="modal-vendedor-nombre">-</span>
+                </div>
+                <div>
+                    <label>Método de Pago:</label>
+                    <span id="modal-metodo-pago">-</span>
+                </div>
+            </div>
+
+            <!-- Tabla de Productos -->
+            <div class="modal-table-wrapper">
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                            <th>Precio Unit.</th>
+                            <th>IVA %</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tabla-items">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totales -->
+            <div class="modal-totales">
+                <div>Subtotal: <strong id="modal-subtotal">$ 0,00</strong></div>
+                <div>IVA (19%): <strong id="modal-iva">$ 0,00</strong></div>
+                <div class="modal-total-destacado">Total a Pagar: <strong id="modal-total">$ 0,00</strong></div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" id="btn-modal-cancelar" class="btn-modal-cancel">
+                <i class="fa-solid fa-arrow-left"></i> Modificar Factura
+            </button>
+            <button type="button" id="btn-modal-confirmar" class="btn-modal-confirm">
+                <i class="fa-solid fa-file-circle-check"></i> Confirmar y Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+window.sigmaferClientes = {{ clientes | tojson }};
+window.sigmaferProductos = {{ productos | tojson }};
+</script>
+<script 
+src="{{ url_for('static', filename='js/facturacion/crear_factura.js') }}">
+</script>
+
+{% endblock %}

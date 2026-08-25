@@ -1,0 +1,140 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Lista de órdenes de compra{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<style>
+.table-header.ordenes-grid,
+.row.ordenes-grid {
+    display: grid;
+    grid-template-columns: 45px 130px 1.8fr 1.2fr 110px 130px 90px;
+    align-items: center;
+    column-gap: 12px;
+}
+.tag.orden {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+        <h2>Órdenes de Compra</h2>
+        
+        <div class="window-actions">
+            <a href="{{ url_for('inventarios.inicio') }}" class="btn-close-pro" title="Volver al menú">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <!-- BUSCADOR -->
+        <input 
+            type="text" 
+            id="input-busqueda-ordenes"
+            class="search" 
+            placeholder="Buscar por número de orden o proveedor..."
+            autocomplete="off"
+        >
+
+        <!-- BOTÓN NUEVA ORDEN -->
+        <a href="{{ url_for('inventarios.crear_orden_compra') }}" class="btn-new">
+            + Nueva orden de compra
+        </a>
+
+    </div>
+
+    <!-- HEADER TABLA -->
+    <div class="table-header ordenes-grid">
+        <span>No.</span>
+        <span>No. Orden</span>
+        <span>Proveedor</span>
+        <span>Solicitante</span>
+        <span>Fecha</span>
+        <span style="text-align: right;">Total</span>
+        <span style="text-align: center;">Estado</span>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-body" id="tabla-ordenes-body">
+
+        {% for orden in ordenes %}
+        <div class="row ordenes-grid fila-orden"
+             data-orden="{{ (orden.numero_orden or '') | lower }}"
+             data-prov="{{ (orden.proveedor or '') | lower }}"
+             data-user="{{ (orden.usuario or '') | lower }}">
+            <span>{{ loop.index }}</span>
+            <strong style="color: #38bdf8; font-family: monospace;">{{ orden.numero_orden }}</strong>
+            <span style="color: #ffffff; font-weight: 600;">{{ orden.proveedor or 'Proveedor' }}</span>
+            <span style="color: #94a3b8; font-size: 13px;">{{ orden.usuario or '-' }}</span>
+            <span style="color: #cbd5e1;">{{ orden.fecha_creacion }}</span>
+            <strong style="color: #38bdf8; text-align: right;">$ {{ "{:,.2f}".format(orden.total | float) if orden.total else "0.00" }}</strong>
+            <div style="text-align: center;">
+                <span class="tag orden">Emitida</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="row" style="display: flex; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No hay órdenes de compra registradas actualmente.</span>
+        </div>
+        {% endfor %}
+
+        <div id="sin-resultados-ordenes" class="row" style="display: none; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No se encontraron órdenes de compra que coincidan con la búsqueda.</span>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputBusqueda = document.getElementById("input-busqueda-ordenes");
+    const filas = document.querySelectorAll(".fila-orden");
+    const sinResultados = document.getElementById("sin-resultados-ordenes");
+
+    function filtrarOrdenes() {
+        const texto = inputBusqueda.value.trim().toLowerCase();
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const orden = fila.getAttribute("data-orden") || "";
+            const prov = fila.getAttribute("data-prov") || "";
+            const user = fila.getAttribute("data-user") || "";
+
+            const coincide = !texto || orden.includes(texto) || prov.includes(texto) || user.includes(texto);
+
+            if (coincide) {
+                fila.style.display = "grid";
+                visibles++;
+            } else {
+                fila.style.display = "none";
+            }
+        });
+
+        if (sinResultados) {
+            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+        }
+    }
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarOrdenes);
+});
+</script>
+{% endblock %}

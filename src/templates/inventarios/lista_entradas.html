@@ -1,0 +1,169 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Lista de entradas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<style>
+.table-header.entradas-grid,
+.row.entradas-grid {
+    display: grid;
+    grid-template-columns: 45px 120px 110px 1.8fr 1.4fr 110px 80px;
+    align-items: center;
+    column-gap: 12px;
+}
+.tag.compra {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+.tag.ajuste {
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.12);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+        <h2>Entradas de Inventario</h2>
+        
+        <div class="window-actions">
+            <a href="{{ url_for('inventarios.inicio') }}" class="btn-close-pro" title="Volver al menú">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <!-- BUSCADOR -->
+        <input 
+            type="text" 
+            id="input-busqueda-entradas"
+            class="search" 
+            placeholder="Buscar por documento o proveedor..."
+            autocomplete="off"
+        >
+
+        <!-- BOTÓN NUEVA ENTRADA -->
+        <a href="{{ url_for('inventarios.crear_entrada') }}" class="btn-new">
+            + Nueva entrada
+        </a>
+
+        <!-- FILTROS -->
+        <div class="filters">
+            <select id="filtro-tipo-entrada">
+                <option value="">Todos los Tipos</option>
+                <option value="entrada">Compra a Proveedor</option>
+                <option value="ajuste">Ajuste de Inventario</option>
+            </select>
+        </div>
+
+    </div>
+
+    <!-- HEADER TABLA -->
+    <div class="table-header entradas-grid">
+        <span>No.</span>
+        <span>No. Documento</span>
+        <span>Tipo</span>
+        <span>Proveedor / Origen</span>
+        <span>Observaciones</span>
+        <span>Fecha</span>
+        <span style="text-align: center;">Estado</span>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-body" id="tabla-entradas-body">
+
+        {% for doc in documentos %}
+        <div class="row entradas-grid fila-entrada"
+             data-doc="{{ (doc.numero_documento or '') | lower }}"
+             data-tipo="{{ (doc.tipo_documento or '') | lower }}"
+             data-proveedor="{{ (doc.proveedor or '') | lower }}">
+            <span>{{ loop.index }}</span>
+            <strong style="color: #60a5fa; font-family: monospace;">{{ doc.numero_documento }}</strong>
+            <div>
+                {% if doc.tipo_documento == 'Entrada' or 'CO' in doc.numero_documento %}
+                <span class="tag compra">Compra</span>
+                {% else %}
+                <span class="tag ajuste">Ajuste</span>
+                {% endif %}
+            </div>
+            <span style="color: #ffffff;">{{ doc.proveedor or 'Ajuste Interno' }}</span>
+            <span style="color: #94a3b8; font-size: 13px;">{{ doc.observaciones or '-' }}</span>
+            <span style="color: #cbd5e1;">{{ doc.fecha_creacion }}</span>
+            <div style="text-align: center;">
+                <span class="activo">Registrado</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="row" style="display: flex; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No hay documentos de entrada registrados actualmente.</span>
+        </div>
+        {% endfor %}
+
+        <div id="sin-resultados-entradas" class="row" style="display: none; justify-content: center; align-items: center; color: #94a3b8; padding: 30px;">
+            <span>No se encontraron documentos que coincidan con la búsqueda.</span>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputBusqueda = document.getElementById("input-busqueda-entradas");
+    const filtroTipo = document.getElementById("filtro-tipo-entrada");
+    const filas = document.querySelectorAll(".fila-entrada");
+    const sinResultados = document.getElementById("sin-resultados-entradas");
+
+    function filtrarEntradas() {
+        const texto = inputBusqueda.value.trim().toLowerCase();
+        const tipo = filtroTipo.value.trim().toLowerCase();
+
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const doc = fila.getAttribute("data-doc") || "";
+            const prov = fila.getAttribute("data-proveedor") || "";
+            const fTipo = fila.getAttribute("data-tipo") || "";
+
+            const coincideTexto = !texto || doc.includes(texto) || prov.includes(texto);
+            const coincideTipo = !tipo || fTipo.includes(tipo);
+
+            if (coincideTexto && coincideTipo) {
+                fila.style.display = "grid";
+                visibles++;
+            } else {
+                fila.style.display = "none";
+            }
+        });
+
+        if (sinResultados) {
+            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+        }
+    }
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarEntradas);
+    if (filtroTipo) filtroTipo.addEventListener("change", filtrarEntradas);
+});
+</script>
+{% endblock %}

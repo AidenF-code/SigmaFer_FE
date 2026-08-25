@@ -1,0 +1,62 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}crear proveedor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_productos.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    
+    <div class="module-card">
+        
+        <!-- HEADER -->
+        <div class="module-header">
+            <h2>Nuevo Proveedor</h2>
+            
+            <div class="window-actions">
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="dot red"></span>
+            </div>
+        </div>
+        
+        <!-- CUERPO -->
+        <div class="module-body">
+            
+            <form class="form-grid" method="POST">
+                
+                <input type="text" placeholder="Nombre Del Proveedor" name="nombre" required>
+                <input type="text" placeholder="Nit" name="nit" required>
+                <input type="text" placeholder="Dirección" name="direccion" required>
+                <input type="text" placeholder="Teléfono" name="telefono" required>
+                <input type="email" placeholder="Correo Electrónico" name="correo" required>
+                <input type="text" placeholder="Contacto" name="nombre_contacto" required>
+                
+                <select name="estado" required>
+                    <option value="1" selected>Activo</option>
+                    <option value="0">Inactivo</option>
+                </select>
+
+                <div class="form-actions">
+                    <a href="{{ url_for('inventarios.inicio') }}" class="btn cancel">Cancelar</a>
+
+                    <button type="submit" class="btn save">Guardar</button>
+                </div>
+                
+            </form>
+            {% if error %}
+                <div class="form-error">
+                    {{ error }}
+                </div>
+            {% endif %}
+  
+        </div>
+        
+    </div>
+    
+</div>
+
+{% endblock %}
