@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SigmaFer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='estyles/dashboard.css') }}">
 
     <!-- Iconos -->
@@ -12,32 +13,45 @@
 
 <section class="hub-container">
 
+    <!-- ENCABEZADO SUPERIOR: LOGO Y MENSAJE DE BIENVENIDA -->
+    <header class="dashboard-header">
+        <img 
+            src="{{ url_for('static', filename='imagenes/logo-horizontal-sigmafer.png') }}" 
+            alt="Logo SigmaFer" 
+            class="dashboard-logo"
+        >
+        <h1 class="welcome-title">
+            Bienvenido a SigmaFer <span class="user-name">{{ nombre_usuario }}</span>
+        </h1>
+    </header>
+
+    <!-- PANEL DE MÓDULOS -->
     <div class="hub-box">
 
         <div class="module">
-            <a href="{{ url_for('administracion.inicio')}}" class="circle admin" >
+            <a href="{{ url_for('administracion.inicio') }}" class="circle admin" title="Administración del Sistema">
                 <i class="fa-solid fa-user-gear"></i>
             </a>
             <p>Administrador</p>
         </div>
 
         <div class="module">
-            <a  href="{{ url_for('facturacion.inicio') }}" class="circle facturacion" >
+            <a href="{{ url_for('facturacion.inicio') }}" class="circle facturacion" title="Módulo de Facturación">
                 <i class="fa-solid fa-cash-register"></i>
             </a>
             <p>Facturación</p>
         </div>
 
         <div class="module">
-            <a href="{{ url_for('inventarios.inicio') }}" class="circle inventarios" >
+            <a href="{{ url_for('inventarios.inicio') }}" class="circle inventarios" title="Módulo de Inventarios">
                 <i class="fa-solid fa-warehouse"></i>
             </a>
             <p>Inventarios</p>
         </div>
 
         <div class="module">
-            <a href="{{ url_for('index.inicio') }}" class="circle logout">
-                    <i class="fa-solid fa-right-from-bracket"></i>
+            <a href="{{ url_for('index.logout') }}" class="circle logout" title="Cerrar sesión">
+                <i class="fa-solid fa-right-from-bracket"></i>
             </a>
             <p>Salir</p>
         </div>

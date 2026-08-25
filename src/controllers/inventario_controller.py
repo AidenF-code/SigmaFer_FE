@@ -444,7 +444,7 @@ def crear_entrada():
         try:
             _client().post('/documentos_inventario/', json=payload)
             flash('Entrada de inventario guardada exitosamente', 'success')
-            return redirect(url_for('inventarios.lista_productos'))
+            return redirect(url_for('inventarios.lista_entradas'))
         except APIError as e:
             return render_template(
                 'inventarios/crear_entrada.html',
@@ -473,12 +473,53 @@ def crear_entrada():
 
 @inventarios_bp.route('/lista_entradas')
 def lista_entradas():
+    import unicodedata
+    def clean(t):
+        if not t: return ''
+        return unicodedata.normalize('NFKD', str(t)).encode('ASCII', 'ignore').decode('utf-8').lower()
+
     try:
         documentos_data = _client().get('/documentos_inventario/')
-        documentos = APIClient.as_list(documentos_data)
+        todos = APIClient.as_list(documentos_data)
+        documentos = []
+        for d in todos:
+            tipo = clean(d.get('tipo_documento', ''))
+            num = (d.get('numero_documento') or '').upper()
+            # Excluir Devoluciones y Salidas
+            if 'devolu' in tipo or num.startswith('DE-') or 'salida' in tipo or num.startswith('SA-'):
+                continue
+            if 'entrada' in tipo or 'ajuste' in tipo or 'compra' in tipo or num.startswith('CO-') or num.startswith('EN-'):
+                documentos.append(d)
     except APIError:
         documentos = []
     return render_template('inventarios/lista_entradas.html', documentos=documentos)
+
+
+@inventarios_bp.route('/ver_entrada/<int:id>')
+def ver_entrada(id):
+    try:
+        documento = _client().get(f'/documentos_inventario/{id}')
+    except APIError as e:
+        flash(f'Error al obtener el documento de entrada: {e.message}', 'error')
+        return redirect(url_for('inventarios.lista_entradas'))
+
+    try:
+        productos_data = _client().get('/productos/')
+        productos = APIClient.as_list(productos_data)
+        prod_map = {p.get('id'): p for p in productos}
+        if documento and isinstance(documento, dict):
+            for d in documento.get('detalles', []):
+                p_id = d.get('producto_id')
+                if p_id in prod_map:
+                    if not d.get('producto'):
+                        d['producto'] = prod_map[p_id].get('nombre', '')
+                    if not d.get('codigo_producto'):
+                        d['codigo_producto'] = prod_map[p_id].get('codigo', '')
+    except Exception:
+        pass
+
+    return render_template('inventarios/ver_entrada.html', documento=documento)
+
 
 
 @inventarios_bp.route('/crear_salida', methods=['GET', 'POST'])

@@ -6,7 +6,8 @@
 }
 
 body {
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     background: radial-gradient(circle at top, #1e3a8a, #020617);
     display: flex;
     justify-content: center;
@@ -19,20 +20,13 @@ body {
 ==========================================*/
 
 .container{
-
-    width:100%;
-    min-height:100vh;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    padding:35px;
-
-    overflow:hidden;
-
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    overflow-y: auto;
     background:
     linear-gradient(
         120deg,
@@ -40,36 +34,87 @@ body {
         #1A2D73 45%,
         #081330 100%
     );
-
 }
 
 /*==========================================
-    PANEL PRINCIPAL
+    HUB CONTAINER & ENCABEZADO
 ==========================================*/
+
+.hub-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    max-width: 950px;
+    animation: fadeInDashboard 0.6s ease-out;
+}
+
+@keyframes fadeInDashboard {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboard-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: min(850px, 92vw);
+    margin-bottom: 5px;
+}
+
+.dashboard-logo {
+    width: 100%;
+    max-width: min(850px, 92vw);
+    height: auto;
+    max-height: 320px;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.7));
+    transition: transform 0.3s ease;
+}
+
+.dashboard-logo:hover {
+    transform: scale(1.02);
+}
+
+.welcome-title {
+    font-size: 30px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    margin: 0;
+}
+
+.welcome-title .user-name {
+    color: #60a5fa;
+    font-weight: 700;
+    text-shadow: 0 0 24px rgba(96, 165, 250, 0.55);
+}
 
 /*==========================================*
 * PANEL CENTRAL - GLASS
 *==========================================*/
 
 .hub-box {
-
     position: relative;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     gap: 55px;
-
-    width: min(850px, 90vw);
-
-    min-height: 300px;
-
-    padding: 50px 60px;
-
+    width: min(850px, 92vw);
+    min-height: 280px;
+    padding: 45px 60px;
     border-radius: 28px;
-
     background:
         linear-gradient(
             135deg,
@@ -87,7 +132,6 @@ body {
         inset 0 1px 0 rgba(255,255,255,.15);
 
     overflow: hidden;
-
     flex-wrap: wrap;
 }
 
@@ -96,17 +140,11 @@ body {
 *==========================================*/
 
 .hub-box::before {
-
     content: "";
-
     position: absolute;
-
     inset: 0;
-
     padding: 1px;
-
     border-radius: 28px;
-
     background:
         linear-gradient(
             140deg,
@@ -149,7 +187,6 @@ body {
     transition: 0.3s;
     box-shadow: 0 0 15px rgba(0,0,0,0.5);
     text-decoration: none;
-
 }
 
 /* HOVER */
@@ -200,6 +237,19 @@ body {
 
 /* RESPONSIVE */
 @media (max-width: 600px) {
+    .dashboard-header {
+        width: 92vw;
+    }
+
+    .dashboard-logo {
+        max-height: 160px;
+        max-width: 92vw;
+    }
+
+    .welcome-title {
+        font-size: 22px;
+    }
+
     .hub-box {
         padding: 30px;
         gap: 25px;

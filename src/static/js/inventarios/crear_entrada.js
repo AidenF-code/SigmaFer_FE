@@ -479,29 +479,50 @@ document.addEventListener("DOMContentLoaded", () => {
         btnModalConfirmar.addEventListener("click", () => {
             entradaConfirmada = true;
             cerrarModalResumen();
-            if (typeof formEntrada.requestSubmit === "function") {
-                formEntrada.requestSubmit();
-            } else {
-                HTMLFormElement.prototype.submit.call(formEntrada);
-            }
+            HTMLFormElement.prototype.submit.call(formEntrada);
         });
     }
 
     if (formEntrada) {
         formEntrada.addEventListener("submit", (e) => {
-            // Validar proveedor si es compra
-            if (tipoEntradaInput.value === "COMPRA" && proveedorId && !proveedorId.value) {
-                e.preventDefault();
-                alert("Por favor seleccione un proveedor válido para la entrada de compra.");
-                if (proveedorBusqueda) proveedorBusqueda.focus();
+            if (entradaConfirmada) {
                 return;
+            }
+
+            const tipoActual = tipoEntradaInput.value;
+
+            // Validar campos según tipo
+            if (tipoActual === "COMPRA") {
+                const numFact = document.getElementById("numero_factura_proveedor");
+                if (numFact && !numFact.value.trim()) {
+                    e.preventDefault();
+                    alert("Por favor ingrese el número de factura del proveedor.");
+                    numFact.focus();
+                    return;
+                }
+
+                if (proveedorId && !proveedorId.value) {
+                    e.preventDefault();
+                    alert("Por favor seleccione un proveedor válido para la entrada de compra.");
+                    if (proveedorBusqueda) proveedorBusqueda.focus();
+                    return;
+                }
+            } else if (tipoActual === "AJUSTE") {
+                const obsAjuste = document.getElementById("observaciones_ajuste");
+                if (obsAjuste && !obsAjuste.value.trim()) {
+                    e.preventDefault();
+                    alert("Por favor ingrese las observaciones o razón del ajuste de inventario.");
+                    obsAjuste.focus();
+                    return;
+                }
             }
 
             // Validar que haya al menos un producto con ID o nombre
             const filasConProd = Array.from(document.querySelectorAll(".producto-row")).filter(r => {
-                const id = r.querySelector(".producto-id").value;
-                const nom = r.querySelector(".producto-nombre").value;
-                return (id && id.trim() !== "") || (nom && nom.trim() !== "");
+                const id = r.querySelector(".producto-id") ? r.querySelector(".producto-id").value : "";
+                const nom = r.querySelector(".producto-nombre") ? r.querySelector(".producto-nombre").value : "";
+                const cod = r.querySelector(".producto-codigo") ? r.querySelector(".producto-codigo").value : "";
+                return (id && id.trim() !== "") || (nom && nom.trim() !== "") || (cod && cod.trim() !== "");
             });
 
             if (filasConProd.length === 0) {
@@ -510,11 +531,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            if (!entradaConfirmada) {
-                e.preventDefault();
-                abrirModalResumen();
-            }
+            e.preventDefault();
+            abrirModalResumen();
         });
     }
 
 });
+

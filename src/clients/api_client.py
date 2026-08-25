@@ -15,7 +15,9 @@ class APIClient:
         self.base_url = current_app.config["API_BASE_URL"]
         self.headers = {'Content-Type': 'application/json'}
         if token:
+            self.headers['Authorization'] = f"Bearer {token}"
             self.headers['X-Auth-Token'] = token
+
 
     def _url(self, path: str) -> str:
         ful_url = f"{self.base_url.rstrip('/')}/{path.lstrip('/')}"
