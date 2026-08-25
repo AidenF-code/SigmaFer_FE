@@ -13,8 +13,6 @@
 
 <body>
 
-    <body>
-
     <!-- ========================================== -->
     <!-- NAVBAR -->
     <!-- ========================================== -->
@@ -221,10 +219,15 @@
             <!-- BOTÓN DEL USUARIO -->
             <div class="user-profile">
                 <div class="avatar">
-                    AF
+                    {% if session.get('usuario') and session.usuario.nombre %}
+                        {% set nombres = session.usuario.nombre.split() %}
+                        {{ (nombres[0][0] ~ (nombres[1][0] if nombres|length > 1 else (nombres[0][1] if nombres[0]|length > 1 else ''))).upper() }}
+                    {% else %}
+                        AD
+                    {% endif %}
                 </div>
                 <span class="username">
-                    Andres Fernandez
+                    {{ session.usuario.nombre if session.get('usuario') and session.usuario.nombre else 'Administrador' }}
                 </span>
                 <i class="fa-solid fa-chevron-down user-arrow"></i>
             </div>
@@ -232,7 +235,7 @@
             <!-- DROPDOWN -->
             <ul class="user-dropdown">
                 <li>
-                    <a href="{{ url_for('index.inicio') }}">
+                    <a href="{{ url_for('index.logout') }}">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span>Salir</span>
                     </a>
@@ -260,7 +263,24 @@
 
 <!-- SCRIPTS GLOBALES -->
 <script>
-
+document.addEventListener("DOMContentLoaded", () => {
+    const dateSpan = document.querySelector(".date-box span");
+    const greetingH1 = document.querySelector(".dashboard-header h1");
+    const now = new Date();
+    const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    
+    if (dateSpan) {
+        dateSpan.textContent = `${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+    }
+    if (greetingH1) {
+        const h = now.getHours();
+        let saludo = "Buenos días";
+        if (h >= 12 && h < 19) saludo = "Buenas tardes";
+        else if (h >= 19 || h < 5) saludo = "Buenas noches";
+        const userName = "{{ usuario_actual_nombre }}";
+        greetingH1.textContent = `¡${saludo}, ${userName}!`;
+    }
+});
 </script>
 
 {% block extra_js %}{% endblock %}

@@ -1283,3 +1283,27 @@ body {
     position: relative;
     z-index: 1000;
 }
+
+/* ========================================== */
+/* MAIN & FOOTER STICKY */
+/* ========================================== */
+
+main {
+    flex: 1 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+    width: 100%;
+    padding: 24px 28px;
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(3, 9, 28, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
