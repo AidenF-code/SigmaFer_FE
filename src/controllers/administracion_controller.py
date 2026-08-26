@@ -153,65 +153,95 @@ def lista_usuarios():
 
 
 # ==========================================
-# ROLES
+# ROLES Y PERMISOS
 # ==========================================
 
-# CREAR ROL
+def _extraer_permisos_del_form(form):
+    """Extrae los checkboxes de permisos agrupados por módulo, recurso y acción."""
+    permisos = {}
+    for key in form.keys():
+        if key.startswith('perm_'):
+            # Formato: perm_<modulo>_<recurso>_<accion>
+            partes = key.split('_', 3)
+            if len(partes) == 4:
+                _, modulo, recurso, accion = partes
+                if modulo not in permisos:
+                    permisos[modulo] = {}
+                if recurso not in permisos[modulo]:
+                    permisos[modulo][recurso] = {}
+                permisos[modulo][recurso][accion] = True
+    return permisos
 
+
+# CREAR ROL
 @administracion_bp.route('/crear_rol', methods=['GET', 'POST'])
 def crear_rol():
-
-
     if request.method == 'POST':
+        nombre = request.form.get('nombre', '').strip()
+        permisos = _extraer_permisos_del_form(request.form)
 
         data = {
-            'nombre': request.form.get('nombre'),
+            'nombre': nombre,
+            'permisos': permisos
         }
 
-
         try:
-
-            respuesta = _client().post(
-                '/roles/',
-                json=data
-            )
-            
-            return redirect(
-                url_for('administracion.crear_rol')
-            )
-
+            _client().post('/roles/', json=data)
+            flash('Rol creado exitosamente con sus permisos configurados.', 'success')
+            return redirect(url_for('administracion.lista_roles'))
         except APIError as e:
-        
-                    print("================================")
-                    print("ERROR AL CREAR USUARIO")
-                    print("Mensaje:", e.message)
-                    print("Status:", e.status_code)
-                    print("Errors:", e.errors)
-                    print("================================")
-        
-                    return render_template(
-                        'administracion/crear_rol.html',
-                        error=e.message
-                    )
-        
+            return render_template(
+                'administracion/crear_rol.html',
+                error=e.message
+            )
 
     return render_template('administracion/crear_rol.html')
 
-# LISTA DE ROLES
 
+# EDITAR ROL
+@administracion_bp.route('/editar_rol/<int:id>', methods=['GET', 'POST'])
+def editar_rol(id):
+    try:
+        rol = _client().get(f'/roles/{id}')
+    except APIError as e:
+        flash(f'Error al obtener el rol: {e.message}', 'error')
+        return redirect(url_for('administracion.lista_roles'))
+
+    if request.method == 'POST':
+        nombre = request.form.get('nombre', '').strip()
+        permisos = _extraer_permisos_del_form(request.form)
+
+        data = {
+            'nombre': nombre,
+            'permisos': permisos
+        }
+
+        try:
+            _client().put(f'/roles/{id}', json=data)
+            flash('Rol y permisos actualizados exitosamente.', 'success')
+            return redirect(url_for('administracion.lista_roles'))
+        except APIError as e:
+            return render_template(
+                'administracion/editar_rol.html',
+                rol=rol,
+                error=e.message
+            )
+
+    return render_template('administracion/editar_rol.html', rol=rol)
+
+
+# LISTA DE ROLES
 @administracion_bp.route('/lista_roles')
 def lista_roles():
-
     q = request.args.get('q', '').strip()
-
     try:
         data = _client().get('/roles/')
         roles = APIClient.as_list(data)
+    except APIError:
+        roles = []
 
-    except APIError as e:
-            roles = []
     return render_template(
-            'administracion/lista_roles.html',
-            roles=roles,
-            q=q
-            )
+        'administracion/lista_roles.html',
+        roles=roles,
+        q=q
+    )

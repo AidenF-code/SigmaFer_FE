@@ -991,6 +991,90 @@ def ver_devolucion(id):
     return render_template('inventarios/ver_devolucion.html', documento=documento)
 
 
+# ==========================================
+# CATEGORÍAS
+# ==========================================
+
+@inventarios_bp.route('/crear_categoria', methods=['GET', 'POST'])
+def crear_categoria():
+    if request.method == 'POST':
+        nombre = request.form.get('nombre', '').strip()
+        estado = request.form.get('estado', 'Activo').strip()
+
+        data = {
+            'nombre': nombre,
+            'estado': estado
+        }
+
+        try:
+            _client().post('/categorias/', json=data)
+            flash('Categoría creada exitosamente.', 'success')
+            return redirect(url_for('inventarios.lista_categorias'))
+        except APIError as e:
+            return render_template(
+                'inventarios/crear_categoria.html',
+                nombre=nombre,
+                estado=estado,
+                error=e.message
+            )
+
+    return render_template('inventarios/crear_categoria.html')
+
+
+@inventarios_bp.route('/editar_categoria/<int:id>', methods=['GET', 'POST'])
+def editar_categoria(id):
+    try:
+        categoria = _client().get(f'/categorias/{id}')
+    except APIError as e:
+        flash(f'Error al obtener categoría: {e.message}', 'error')
+        return redirect(url_for('inventarios.lista_categorias'))
+
+    if request.method == 'POST':
+        nombre = request.form.get('nombre', '').strip()
+        estado = request.form.get('estado', 'Activo').strip()
+
+        data = {
+            'nombre': nombre,
+            'estado': estado
+        }
+
+        try:
+            _client().put(f'/categorias/{id}', json=data)
+            flash('Categoría actualizada exitosamente.', 'success')
+            return redirect(url_for('inventarios.lista_categorias'))
+        except APIError as e:
+            return render_template(
+                'inventarios/editar_categoria.html',
+                categoria=categoria,
+                error=e.message
+            )
+
+    return render_template('inventarios/editar_categoria.html', categoria=categoria)
+
+
+@inventarios_bp.route('/cambiar_estado_categoria/<int:id>', methods=['GET', 'POST'])
+def cambiar_estado_categoria(id):
+    try:
+        res = _client().post(f'/categorias/{id}/toggle_estado')
+        msg = res.get('message', 'Estado de la categoría actualizado.') if isinstance(res, dict) else 'Estado actualizado.'
+        flash(msg, 'success')
+    except APIError as e:
+        flash(f'Error al cambiar estado: {e.message}', 'error')
+    return redirect(url_for('inventarios.lista_categorias'))
+
+
+@inventarios_bp.route('/lista_categorias')
+def lista_categorias():
+    try:
+        categorias_data = _client().get('/categorias/')
+        categorias = APIClient.as_list(categorias_data)
+    except APIError:
+        categorias = []
+
+    return render_template('inventarios/lista_categorias.html', categorias=categorias)
+
+
+
 
 
 

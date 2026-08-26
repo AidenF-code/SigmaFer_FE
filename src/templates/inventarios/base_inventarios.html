@@ -39,15 +39,36 @@
                 <span>Inicio</span>
             </a>
 
+            <!-- CATEGORÍAS -->
+            <li class="dropdown">
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>Categorías</span>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </a>
+                <ul class="submenu">
+                    <li>
+                        <a href="{{ url_for('inventarios.crear_categoria') }}">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Nueva Categoría</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('inventarios.lista_categorias') }}">
+                            <i class="fa-solid fa-list"></i>
+                            <span>Lista de Categorías</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
-
-                <li class="dropdown">
-                    <!-- BOTÓN PRINCIPAL -->
-                    <a href="#" class="nav-item">
-                        <i class="fa-solid fa-cube"></i>
-                        <span>Productos</span>
-                        <i class="fa-solid fa-chevron-down arrow"></i>
-                    </a>
+            <!-- PRODUCTOS -->
+            <li class="dropdown">
+                <a href="#" class="nav-item">
+                    <i class="fa-solid fa-cube"></i>
+                    <span>Productos</span>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </a>
                     <!-- SUBMENÚ -->
                     <ul class="submenu">
 

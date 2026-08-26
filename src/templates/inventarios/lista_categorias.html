@@ -1,0 +1,188 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Lista de Categorías - SigmaFer{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<style>
+.table-header.categorias-grid,
+.row.categorias-grid {
+    display: grid;
+    grid-template-columns: 60px 1fr 140px 110px;
+    align-items: center;
+    column-gap: 15px;
+}
+
+.tag.activo, .badge-status.activo {
+    background: rgba(52, 211, 153, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.tag.inactivo, .badge-status.inactivo {
+    background: rgba(248, 113, 113, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.btn-action.toggle-status {
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.10);
+    border: 1px solid rgba(250, 204, 21, 0.25);
+}
+
+.btn-action.toggle-status:hover {
+    background: rgba(250, 204, 21, 0.22);
+    border-color: #facc15;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="module-card">
+
+    <!-- HEADER -->
+    <div class="module-header">
+        <h2>Categorías de Productos</h2>
+
+        <div class="window-actions">
+            <a href="{{ url_for('inventarios.inicio') }}" class="btn-close-pro" title="Volver al menú">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- CONTROLES -->
+    <div class="controls">
+
+        <!-- BUSCADOR -->
+        <input 
+            type="text" 
+            id="input-busqueda-categorias"
+            class="search" 
+            placeholder="Buscar por nombre de categoría..."
+            autocomplete="off"
+        >
+
+        <!-- BOTÓN NUEVA CATEGORÍA -->
+        <a href="{{ url_for('inventarios.crear_categoria') }}" class="btn-new">
+            <i class="fa-solid fa-plus"></i> Nueva categoría
+        </a>
+
+        <!-- FILTROS -->
+        <div class="filters">
+            <select id="filtro-estado-categoria">
+                <option value="">Todos los Estados</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+            </select>
+        </div>
+
+    </div>
+
+    <!-- HEADER TABLA -->
+    <div class="table-header categorias-grid">
+        <span>No.</span>
+        <span>Nombre de la Categoría</span>
+        <span style="text-align: center;">Estado</span>
+        <span style="text-align: center;">Acciones</span>
+    </div>
+
+    <!-- TABLA BODY -->
+    <div class="table-body" id="tabla-categorias-body">
+
+        {% for cat in categorias %}
+        <div class="row categorias-grid fila-categoria"
+             data-nombre="{{ (cat.nombre or '') | lower }}"
+             data-estado="{{ (cat.estado or 'activo') | lower }}">
+            <span>{{ loop.index }}</span>
+            <strong style="color: #ffffff; font-size: 14px;">{{ cat.nombre }}</strong>
+            
+            <div style="text-align: center;">
+                {% if (cat.estado or 'Activo') == 'Activo' %}
+                    <span class="tag activo"><i class="fa-solid fa-circle-check" style="font-size: 10px;"></i> Activo</span>
+                {% else %}
+                    <span class="tag inactivo"><i class="fa-solid fa-circle-xmark" style="font-size: 10px;"></i> Inactivo</span>
+                {% endif %}
+            </div>
+
+            <div class="actions" style="display: flex; gap: 8px; justify-content: center;">
+                <a href="{{ url_for('inventarios.editar_categoria', id=cat.id) }}" 
+                   class="btn-action edit" 
+                   title="Editar nombre o estado">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+
+                <a href="{{ url_for('inventarios.cambiar_estado_categoria', id=cat.id) }}" 
+                   class="btn-action toggle-status" 
+                   title="Alternar estado (Activo/Inactivo)">
+                    <i class="fa-solid fa-power-off"></i>
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="row" style="display: flex; justify-content: center; align-items: center; color: #94a3b8; padding: 35px;">
+            <span>No hay categorías registradas actualmente.</span>
+        </div>
+        {% endfor %}
+
+        <div id="sin-resultados-categorias" class="row" style="display: none; justify-content: center; align-items: center; color: #94a3b8; padding: 35px;">
+            <span>No se encontraron categorías que coincidan con la búsqueda.</span>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputBusqueda = document.getElementById("input-busqueda-categorias");
+    const filtroEstado = document.getElementById("filtro-estado-categoria");
+    const filas = document.querySelectorAll(".fila-categoria");
+    const sinResultados = document.getElementById("sin-resultados-categorias");
+
+    function filtrarCategorias() {
+        const texto = inputBusqueda.value.trim().toLowerCase();
+        const estado = filtroEstado.value.trim().toLowerCase();
+
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const nombre = fila.getAttribute("data-nombre") || "";
+            const fEstado = fila.getAttribute("data-estado") || "";
+
+            const coincideTexto = !texto || nombre.includes(texto);
+            const coincideEstado = !estado || fEstado === estado;
+
+            if (coincideTexto && coincideEstado) {
+                fila.style.display = "grid";
+                visibles++;
+            } else {
+                fila.style.display = "none";
+            }
+        });
+
+        if (sinResultados) {
+            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+        }
+    }
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarCategorias);
+    if (filtroEstado) filtroEstado.addEventListener("change", filtrarCategorias);
+});
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 {% extends 'administracion/base_administracion.html' %}
 
-{% block title %}Lista De Roles{% endblock %}
+{% block title %}Lista De Roles - SigmaFer{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/lista_roles.css') }}">
@@ -12,51 +12,75 @@
 
     <!-- HEADER -->
     <div class="module-header">
-
-        <h2>Roles del Sistema</h2>
-
+        <h2>Roles y Permisos del Sistema</h2>
 
         <div class="window-actions">
-
-            <a href="{{ url_for('administracion.inicio') }}" class="btn-close-pro">
+            <a href="{{ url_for('administracion.inicio') }}" class="btn-close-pro" title="Volver al menú">
                 <i class="fa-solid fa-xmark"></i>
             </a>
-            
         </div>
-
     </div>
 
     <!-- CONTROLES -->
     <div class="controls">
-
-        <a 
-            href="{{ url_for('administracion.crear_rol') }}"
-            class="btn-new"
-        >
-            + Nuevo Rol
+        <a href="{{ url_for('administracion.crear_rol') }}" class="btn-new">
+            <i class="fa-solid fa-plus"></i> Nuevo Rol
         </a>
-
     </div>
 
     <!-- TABLA -->
     <div class="table-header">
         <span>No.</span>
-        <span>Nombre</span>
-        <span>Acciones</span>
+        <span>Nombre del Rol</span>
+        <span>Módulos con Permisos</span>
+        <span style="text-align: center;">Acciones</span>
     </div>
 
     <div class="table-body">
 
-        {% for roles in roles %}
+        {% for rol in roles %}
         <div class="row">
-            <span>{{ loop.index}}</span>
-            <span>{{ roles.nombre }}</span>
+            <span>{{ loop.index }}</span>
+            <span class="role-name-cell">
+                <i class="fa-solid fa-shield" style="color: #60a5fa; font-size: 13px;"></i>
+                <strong>{{ rol.nombre }}</strong>
+            </span>
 
+            <div class="perm-badges">
+                {% if rol.nombre | lower in ['administrador', 'admin', 'superadmin'] %}
+                    <span class="badge-mod all"><i class="fa-solid fa-star"></i> Todos los Módulos (Total)</span>
+                {% else %}
+                    {% set p = rol.permisos or {} %}
+                    {% set has_admin = p.get('administracion') %}
+                    {% set has_fact = p.get('facturacion') %}
+                    {% set has_inv = p.get('inventarios') %}
 
-            <div class="actions">
-                <a class="btn-action edit" href="#">✎</a>
+                    {% if has_admin %}
+                        <span class="badge-mod admin"><i class="fa-solid fa-user-gear"></i> Administración</span>
+                    {% endif %}
+                    {% if has_fact %}
+                        <span class="badge-mod fact"><i class="fa-solid fa-cash-register"></i> Facturación</span>
+                    {% endif %}
+                    {% if has_inv %}
+                        <span class="badge-mod inv"><i class="fa-solid fa-warehouse"></i> Inventarios</span>
+                    {% endif %}
+
+                    {% if not has_admin and not has_fact and not has_inv %}
+                        <span style="color: #64748b; font-size: 12px; font-style: italic;">Sin permisos asignados</span>
+                    {% endif %}
+                {% endif %}
             </div>
 
+            <div class="actions">
+                <a class="btn-action edit" href="{{ url_for('administracion.editar_rol', id=rol.id) }}" title="Editar Rol y Permisos">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+            </div>
+
+        </div>
+        {% else %}
+        <div class="row empty-row">
+            <span>No hay roles registrados actualmente.</span>
         </div>
         {% endfor %}
 

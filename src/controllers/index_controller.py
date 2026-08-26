@@ -29,6 +29,14 @@ def inicio():
                 # Fallback al endpoint alternativo si fuera necesario
                 response = client.post('/usuarios/login', json={'correo': email, 'password': password})
 
+            # Si requiere cambio de contraseña en primer ingreso
+            if response.get('primer_ingreso'):
+                session['primer_ingreso_temp'] = {
+                    'token': response.get('temp_token') or response.get('access_token'),
+                    'usuario': response.get('usuario')
+                }
+                return redirect(url_for('index.cambiar_password_inicial'))
+
             token = response.get('access_token') if isinstance(response, dict) else None
             usuario = response.get('usuario') if isinstance(response, dict) else None
 
@@ -53,6 +61,51 @@ def inicio():
     return render_template('index.html', error=error, email=email)
 
 
+@index_bp.route('/cambiar_password_inicial', methods=['GET', 'POST'])
+def cambiar_password_inicial():
+    temp_data = session.get('primer_ingreso_temp')
+    if not temp_data:
+        return redirect(url_for('index.inicio'))
+
+    usuario = temp_data.get('usuario', {})
+    token = temp_data.get('token')
+    error = None
+
+    if request.method == 'POST':
+        password_nueva = (request.form.get('password_nueva') or '').strip()
+        password_confirmar = (request.form.get('password_confirmar') or '').strip()
+
+        if not password_nueva or not password_confirmar:
+            error = 'Por favor complete todos los campos requeridos.'
+            return render_template('cambiar_password_inicial.html', usuario=usuario, error=error)
+
+        if password_nueva != password_confirmar:
+            error = 'Las contraseñas no coinciden. Por favor verifique.'
+            return render_template('cambiar_password_inicial.html', usuario=usuario, error=error)
+
+        if len(password_nueva) < 8:
+            error = 'La contraseña debe tener al menos 8 caracteres.'
+            return render_template('cambiar_password_inicial.html', usuario=usuario, error=error)
+
+        try:
+            client = APIClient(token)
+            client.post('/auth/cambiar_password_inicial', json={'password_nueva': password_nueva})
+
+            # Limpiar sesión temporal y redirigir con mensaje de éxito
+            session.clear()
+            flash('¡Contraseña actualizada exitosamente! Inicia sesión con tu nueva contraseña.', 'success')
+            return redirect(url_for('index.inicio'))
+
+        except APIError as e:
+            error = e.message or 'No se pudo actualizar la contraseña.'
+            return render_template('cambiar_password_inicial.html', usuario=usuario, error=error)
+        except Exception as e:
+            error = f'Error de conexión: {str(e)}'
+            return render_template('cambiar_password_inicial.html', usuario=usuario, error=error)
+
+    return render_template('cambiar_password_inicial.html', usuario=usuario, error=error)
+
+
 @index_bp.route('/logout')
 def logout():
     session.clear()
@@ -67,4 +120,3 @@ def dashboard():
     usuario = session.get('usuario') or {}
     nombre_usuario = usuario.get('nombre', 'Administrador') if isinstance(usuario, dict) else 'Administrador'
     return render_template('dashboard.html', nombre_usuario=nombre_usuario, usuario=usuario)
-

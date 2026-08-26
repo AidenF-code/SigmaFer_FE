@@ -1,12 +1,14 @@
 {% extends 'administracion/base_administracion.html' %}
 
-{% block title %}Nuevo Rol - SigmaFer{% endblock %}
+{% block title %}Editar Rol - SigmaFer{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/crear_rol.css') }}">
 {% endblock %}
 
 {% block content %}
+
+{% set p = rol.permisos or {} %}
 
 <div class="container">
 
@@ -16,8 +18,8 @@
         <div class="module-header">
             <div class="module-header-title">
                 <span class="module-kicker">ADMINISTRACIÓN DE SEGURIDAD</span>
-                <h2>Crear Nuevo Rol</h2>
-                <span class="module-subtitle">Define el nombre del rol y selecciona los permisos asignados por cada módulo</span>
+                <h2>Editar Rol: {{ rol.nombre }}</h2>
+                <span class="module-subtitle">Modifica el nombre del rol y actualiza los permisos asignados en cada módulo</span>
             </div>
 
             <div class="window-actions">
@@ -40,7 +42,7 @@
                             type="text" 
                             id="nombre_rol" 
                             name="nombre" 
-                            placeholder="Ej: Vendedor, Supervisor de Bodega, Facturador, Auditor..." 
+                            value="{{ rol.nombre }}" 
                             required
                             autocomplete="off"
                         >
@@ -85,13 +87,13 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_administracion_usuarios_ver"> Ver / Listar
+                                        <input type="checkbox" name="perm_administracion_usuarios_ver" {% if p.get('administracion', {}).get('usuarios', {}).get('ver') %}checked{% endif %}> Ver / Listar
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_administracion_usuarios_crear"> Crear
+                                        <input type="checkbox" name="perm_administracion_usuarios_crear" {% if p.get('administracion', {}).get('usuarios', {}).get('crear') %}checked{% endif %}> Crear
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_administracion_usuarios_editar"> Editar
+                                        <input type="checkbox" name="perm_administracion_usuarios_editar" {% if p.get('administracion', {}).get('usuarios', {}).get('editar') %}checked{% endif %}> Editar
                                     </label>
                                 </div>
                             </div>
@@ -103,13 +105,13 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_administracion_roles_ver"> Ver / Listar
+                                        <input type="checkbox" name="perm_administracion_roles_ver" {% if p.get('administracion', {}).get('roles', {}).get('ver') %}checked{% endif %}> Ver / Listar
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_administracion_roles_crear"> Crear
+                                        <input type="checkbox" name="perm_administracion_roles_crear" {% if p.get('administracion', {}).get('roles', {}).get('crear') %}checked{% endif %}> Crear
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_administracion_roles_editar"> Editar
+                                        <input type="checkbox" name="perm_administracion_roles_editar" {% if p.get('administracion', {}).get('roles', {}).get('editar') %}checked{% endif %}> Editar
                                     </label>
                                 </div>
                             </div>
@@ -138,13 +140,13 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_facturas_ver"> Ver / Listar
+                                        <input type="checkbox" name="perm_facturacion_facturas_ver" {% if p.get('facturacion', {}).get('facturas', {}).get('ver') %}checked{% endif %}> Ver / Listar
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_facturas_crear"> Crear Facturas
+                                        <input type="checkbox" name="perm_facturacion_facturas_crear" {% if p.get('facturacion', {}).get('facturas', {}).get('crear') %}checked{% endif %}> Crear Facturas
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_facturas_editar"> Modificar
+                                        <input type="checkbox" name="perm_facturacion_facturas_editar" {% if p.get('facturacion', {}).get('facturas', {}).get('editar') %}checked{% endif %}> Modificar
                                     </label>
                                 </div>
                             </div>
@@ -156,13 +158,13 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_clientes_ver"> Ver / Listar
+                                        <input type="checkbox" name="perm_facturacion_clientes_ver" {% if p.get('facturacion', {}).get('clientes', {}).get('ver') %}checked{% endif %}> Ver / Listar
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_clientes_crear"> Crear Clientes
+                                        <input type="checkbox" name="perm_facturacion_clientes_crear" {% if p.get('facturacion', {}).get('clientes', {}).get('crear') %}checked{% endif %}> Crear Clientes
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_clientes_editar"> Editar Clientes
+                                        <input type="checkbox" name="perm_facturacion_clientes_editar" {% if p.get('facturacion', {}).get('clientes', {}).get('editar') %}checked{% endif %}> Editar Clientes
                                     </label>
                                 </div>
                             </div>
@@ -174,13 +176,13 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_metodos_pago_ver"> Ver / Listar
+                                        <input type="checkbox" name="perm_facturacion_metodos_pago_ver" {% if p.get('facturacion', {}).get('metodos_pago', {}).get('ver') %}checked{% endif %}> Ver / Listar
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_metodos_pago_crear"> Crear Formas
+                                        <input type="checkbox" name="perm_facturacion_metodos_pago_crear" {% if p.get('facturacion', {}).get('metodos_pago', {}).get('crear') %}checked{% endif %}> Crear Formas
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_facturacion_metodos_pago_editar"> Editar Formas
+                                        <input type="checkbox" name="perm_facturacion_metodos_pago_editar" {% if p.get('facturacion', {}).get('metodos_pago', {}).get('editar') %}checked{% endif %}> Editar Formas
                                     </label>
                                 </div>
                             </div>
@@ -209,13 +211,13 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_productos_ver"> Ver Productos
+                                        <input type="checkbox" name="perm_inventarios_productos_ver" {% if p.get('inventarios', {}).get('productos', {}).get('ver') %}checked{% endif %}> Ver Productos
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_productos_crear"> Crear Productos
+                                        <input type="checkbox" name="perm_inventarios_productos_crear" {% if p.get('inventarios', {}).get('productos', {}).get('crear') %}checked{% endif %}> Crear Productos
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_productos_editar"> Editar Productos
+                                        <input type="checkbox" name="perm_inventarios_productos_editar" {% if p.get('inventarios', {}).get('productos', {}).get('editar') %}checked{% endif %}> Editar Productos
                                     </label>
                                 </div>
                             </div>
@@ -227,13 +229,13 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_proveedores_ver"> Ver Proveedores
+                                        <input type="checkbox" name="perm_inventarios_proveedores_ver" {% if p.get('inventarios', {}).get('proveedores', {}).get('ver') %}checked{% endif %}> Ver Proveedores
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_proveedores_crear"> Crear Proveedores
+                                        <input type="checkbox" name="perm_inventarios_proveedores_crear" {% if p.get('inventarios', {}).get('proveedores', {}).get('crear') %}checked{% endif %}> Crear Proveedores
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_proveedores_editar"> Editar Proveedores
+                                        <input type="checkbox" name="perm_inventarios_proveedores_editar" {% if p.get('inventarios', {}).get('proveedores', {}).get('editar') %}checked{% endif %}> Editar Proveedores
                                     </label>
                                 </div>
                             </div>
@@ -245,10 +247,10 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_entradas_ver"> Ver Entradas
+                                        <input type="checkbox" name="perm_inventarios_entradas_ver" {% if p.get('inventarios', {}).get('entradas', {}).get('ver') %}checked{% endif %}> Ver Entradas
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_entradas_crear"> Registrar Entrada
+                                        <input type="checkbox" name="perm_inventarios_entradas_crear" {% if p.get('inventarios', {}).get('entradas', {}).get('crear') %}checked{% endif %}> Registrar Entrada
                                     </label>
                                 </div>
                             </div>
@@ -260,10 +262,10 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_salidas_ver"> Ver Salidas
+                                        <input type="checkbox" name="perm_inventarios_salidas_ver" {% if p.get('inventarios', {}).get('salidas', {}).get('ver') %}checked{% endif %}> Ver Salidas
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_salidas_crear"> Registrar Salida
+                                        <input type="checkbox" name="perm_inventarios_salidas_crear" {% if p.get('inventarios', {}).get('salidas', {}).get('crear') %}checked{% endif %}> Registrar Salida
                                     </label>
                                 </div>
                             </div>
@@ -275,10 +277,10 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_devoluciones_ver"> Ver Devoluciones
+                                        <input type="checkbox" name="perm_inventarios_devoluciones_ver" {% if p.get('inventarios', {}).get('devoluciones', {}).get('ver') %}checked{% endif %}> Ver Devoluciones
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_devoluciones_crear"> Registrar Devolución
+                                        <input type="checkbox" name="perm_inventarios_devoluciones_crear" {% if p.get('inventarios', {}).get('devoluciones', {}).get('crear') %}checked{% endif %}> Registrar Devolución
                                     </label>
                                 </div>
                             </div>
@@ -290,10 +292,10 @@
                                 </div>
                                 <div class="resource-checks">
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_ordenes_compra_ver"> Ver Órdenes
+                                        <input type="checkbox" name="perm_inventarios_ordenes_compra_ver" {% if p.get('inventarios', {}).get('ordenes_compra', {}).get('ver') %}checked{% endif %}> Ver Órdenes
                                     </label>
                                     <label class="perm-check-label">
-                                        <input type="checkbox" name="perm_inventarios_ordenes_compra_crear"> Crear Órdenes
+                                        <input type="checkbox" name="perm_inventarios_ordenes_compra_crear" {% if p.get('inventarios', {}).get('ordenes_compra', {}).get('crear') %}checked{% endif %}> Crear Órdenes
                                     </label>
                                 </div>
                             </div>
@@ -308,7 +310,7 @@
                         <i class="fa-solid fa-arrow-left"></i> Cancelar
                     </a>
                     <button type="submit" class="btn save">
-                        <i class="fa-solid fa-check"></i> Guardar Rol
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
                     </button>
                 </div>
 
@@ -333,7 +335,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const checkboxes = document.querySelectorAll('.perm-check-label input[type="checkbox"]');
 
-    // Sincronizar estilo al cambiar checkbox
+    // Sincronizar estilo al cargar y al cambiar
     function updateCheckboxStyle(cb) {
         const label = cb.closest('.perm-check-label');
         if (label) {
