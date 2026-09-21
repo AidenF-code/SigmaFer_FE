@@ -1,0 +1,573 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Editar Orden de Compra {{ orden.numero_orden }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_entrada.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card wide">
+
+        <!-- =====================================================
+             ENCABEZADO
+        ====================================================== -->
+        <div class="module-header">
+            <div class="module-header-title">
+                <span class="module-kicker" style="color: #facc15;">EDICIÓN DE ORDEN</span>
+                <h2>Editar Orden de Compra</h2>
+                <span class="module-subtitle">Modificación de proveedor, observaciones y productos solicitados</span>
+            </div>
+
+            <div class="invoice-number">
+                <span>No. Consecutivo</span>
+                <strong id="label-consecutivo-header">{{ orden.numero_orden }}</strong>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('inventarios.editar_orden_compra', id=orden.id) }}" id="form-editar-orden" autocomplete="off">
+
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 14px 20px; border-radius: 12px; margin: 20px 30px 0 30px; display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px;"></i>
+                <span><strong>Error al guardar:</strong> {{ error }}</span>
+            </div>
+            {% endif %}
+
+            <!-- =====================================================
+                 INFORMACIÓN DEL PROVEEDOR Y ORDEN
+            ====================================================== -->
+            <section class="module-body" style="padding-bottom: 10px;">
+                
+                <!-- FILA 1: DATOS GENERALES -->
+                <div class="form-grid" style="grid-template-columns: 200px 1fr 240px;">
+                    
+                    <!-- Fecha y Hora -->
+                    <div class="form-group">
+                        <label>Fecha de Emisión</label>
+                        <input type="text" value="{{ orden.fecha_creacion }}" readonly style="opacity: 0.85; cursor: not-allowed;">
+                    </div>
+
+                    <!-- Buscador de Proveedor con Autocompletado -->
+                    <div class="form-group">
+                        <label for="proveedor_busqueda">
+                            Proveedor *
+                        </label>
+                        <div class="autocomplete-container">
+                            <input type="text" id="proveedor_busqueda" name="proveedor_busqueda" value="{{ orden.proveedor or '' }}" placeholder="Buscar proveedor por nombre o NIT..." autocomplete="off" required>
+                            <input type="hidden" id="proveedor_id" name="proveedor_id" value="{{ orden.proveedor_id or '' }}">
+                            <div class="autocomplete-results" id="proveedores-resultados"></div>
+                        </div>
+                    </div>
+
+                    <!-- Usuario Responsable -->
+                    <div class="form-group">
+                        <label for="usuario_id">Usuario Solicitante</label>
+                        <select id="usuario_id" name="usuario_id">
+                            {% for u in usuarios %}
+                            <option value="{{ u.id }}" {% if orden.usuario_id == u.id %}selected{% endif %}>{{ u.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <!-- FILA 2: DATOS DEL PROVEEDOR EN BANDA HORIZONTAL COMPACTA -->
+                <div class="supplier-info-strip">
+                    <div class="form-group">
+                        <label>NIT / Doc.</label>
+                        <input type="text" id="nit_proveedor" name="nit_proveedor" placeholder="NIT" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Dirección</label>
+                        <input type="text" id="direccion_proveedor" placeholder="Dirección" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" id="telefono_proveedor" placeholder="Teléfono" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="text" id="correo_proveedor" placeholder="Correo" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Contacto</label>
+                        <input type="text" id="contacto_proveedor" placeholder="Contacto" readonly>
+                    </div>
+                </div>
+
+                <!-- FILA 3: OBSERVACIONES -->
+                <div class="form-group full-width" style="margin-top: 10px;">
+                    <label for="observaciones">Observaciones / Condiciones de Compra</label>
+                    <input type="text" id="observaciones" name="observaciones" value="{{ orden.observaciones or '' }}" placeholder="Instrucciones de entrega, plazo de pago, notas para el proveedor...">
+                </div>
+
+            </section>
+
+            <!-- =====================================================
+                 CUERPO DE LA ORDEN: TABLA DE PRODUCTOS
+            ====================================================== -->
+            <section class="products-section">
+                <div class="products-title">
+                    <div class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+                        <div>
+                            <i class="fa-solid fa-cart-flatbed" style="color: #facc15;"></i>
+                            <div>
+                                <h3>Productos Solicitados</h3>
+                                <span>Modifique los productos, cantidades requeridas y costos pactados</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-product" id="btn-agregar-producto" style="background: rgba(250, 204, 21, 0.15); color: #facc15; border-color: rgba(250, 204, 21, 0.35);">
+                        <i class="fa-solid fa-plus"></i> Agregar línea
+                    </button>
+                </div>
+
+                <div class="products-table-wrapper">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">Código</th>
+                                <th>Producto</th>
+                                <th style="width: 110px;">Cant. Pedida</th>
+                                <th style="width: 140px;">Costo Estim.</th>
+                                <th style="width: 100px;">IVA</th>
+                                <th style="width: 140px;">Subtotal</th>
+                                <th style="width: 45px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabla-productos-body">
+                            {% for d in orden.detalles %}
+                            <tr class="producto-row">
+                                <td>
+                                    <input type="text" name="codigo[]" class="producto-codigo" value="{{ d.codigo_producto or '' }}" placeholder="Código" autocomplete="off">
+                                </td>
+
+                                <td>
+                                    <div class="autocomplete-container">
+                                        <input type="text" name="producto_nombre[]" class="producto-nombre" value="{{ d.producto or '' }}" placeholder="Buscar producto..." autocomplete="off">
+                                        <input type="hidden" name="producto_id[]" class="producto-id" value="{{ d.producto_id }}">
+                                        <div class="autocomplete-results productos-resultados"></div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="{{ d.cantidad }}">
+                                </td>
+
+                                <td>
+                                    <input type="number" name="valor_unitario[]" class="producto-precio" min="0" step="0.01" value="{{ d.valor_unitario }}" placeholder="0.00">
+                                </td>
+
+                                <td>
+                                    <select name="iva_porcentaje[]" class="producto-iva">
+                                        <option value="0">0%</option>
+                                        <option value="5">5%</option>
+                                        <option value="19" selected>19%</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="subtotal[]" class="producto-subtotal" value="$ 0,00" readonly>
+                                </td>
+
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-delete-product" title="Eliminar línea">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            {% if not orden.detalles %}
+                            <tr class="producto-row">
+                                <td>
+                                    <input type="text" name="codigo[]" class="producto-codigo" placeholder="Código" autocomplete="off">
+                                </td>
+
+                                <td>
+                                    <div class="autocomplete-container">
+                                        <input type="text" name="producto_nombre[]" class="producto-nombre" placeholder="Buscar producto..." autocomplete="off">
+                                        <input type="hidden" name="producto_id[]" class="producto-id">
+                                        <div class="autocomplete-results productos-resultados"></div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="1">
+                                </td>
+
+                                <td>
+                                    <input type="number" name="valor_unitario[]" class="producto-precio" min="0" step="0.01" placeholder="0.00">
+                                </td>
+
+                                <td>
+                                    <select name="iva_porcentaje[]" class="producto-iva">
+                                        <option value="0">0%</option>
+                                        <option value="5">5%</option>
+                                        <option value="19" selected>19%</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="subtotal[]" class="producto-subtotal" value="$ 0,00" readonly>
+                                </td>
+
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-delete-product" title="Eliminar línea">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- RESUMEN DE TOTALES -->
+                <div class="summary-container">
+                    <div class="summary-card">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <strong id="subtotal-display">$ 0,00</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>IVA (19%)</span>
+                            <strong id="iva-display">$ 0,00</strong>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row summary-total">
+                            <span>Total Orden</span>
+                            <strong id="total-display" style="color: #38bdf8;">$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 ACCIONES
+            ====================================================== -->
+            <div class="form-actions">
+                <a href="{{ url_for('inventarios.lista_ordenes_compra') }}" class="btn cancel">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
+
+                <button type="submit" class="btn save" id="btn-guardar-orden" style="background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 700;">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.sigmaferProveedores = {{ proveedores | tojson }};
+window.sigmaferProductos = {{ productos | tojson }};
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const proveedores = window.sigmaferProveedores || [];
+    const productos = window.sigmaferProductos || [];
+
+    const proveedorBusqueda = document.getElementById("proveedor_busqueda");
+    const proveedorId = document.getElementById("proveedor_id");
+    const proveedoresResultados = document.getElementById("proveedores-resultados");
+    const nitProv = document.getElementById("nit_proveedor");
+    const dirProv = document.getElementById("direccion_proveedor");
+    const telProv = document.getElementById("telefono_proveedor");
+    const correoProv = document.getElementById("correo_proveedor");
+    const contactoProv = document.getElementById("contacto_proveedor");
+
+    const tablaProductos = document.getElementById("tabla-productos-body");
+    const btnAgregarProducto = document.getElementById("btn-agregar-producto");
+    const subtotalDisplay = document.getElementById("subtotal-display");
+    const ivaDisplay = document.getElementById("iva-display");
+    const totalDisplay = document.getElementById("total-display");
+
+    function normalizarTexto(txt) {
+        return (txt || "").toString().toLowerCase().trim();
+    }
+
+    function formatearMoneda(val) {
+        const num = parseFloat(val) || 0;
+        return "$ " + num.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function setProveedor(p) {
+        if (!p) return;
+        if (proveedorId) proveedorId.value = p.id || "";
+        if (proveedorBusqueda) proveedorBusqueda.value = p.nombre || "";
+        if (nitProv) nitProv.value = p.nit || "";
+        if (dirProv) dirProv.value = p.direccion || "";
+        if (telProv) telProv.value = p.telefono || "";
+        if (correoProv) correoProv.value = p.correo || "";
+        if (contactoProv) contactoProv.value = p.nombre_contacto || "";
+        if (proveedoresResultados) {
+            proveedoresResultados.innerHTML = "";
+            proveedoresResultados.classList.remove("active");
+        }
+    }
+
+    // Inicializar proveedor preseleccionado si existe
+    if (proveedorId && proveedorId.value) {
+        const pInicial = proveedores.find(p => String(p.id) === String(proveedorId.value));
+        if (pInicial) setProveedor(pInicial);
+    }
+
+    if (proveedorBusqueda && proveedoresResultados) {
+        proveedorBusqueda.addEventListener("input", () => {
+            const q = normalizarTexto(proveedorBusqueda.value);
+            if (!q) {
+                proveedoresResultados.innerHTML = "";
+                proveedoresResultados.classList.remove("active");
+                if (proveedorId) proveedorId.value = "";
+                return;
+            }
+
+            const matches = proveedores.filter(p => {
+                return normalizarTexto(p.nombre).includes(q) || normalizarTexto(p.nit).includes(q);
+            });
+
+            proveedoresResultados.innerHTML = "";
+            if (matches.length === 0) {
+                proveedoresResultados.innerHTML = `<div class="autocomplete-item"><strong>No se encontraron proveedores</strong></div>`;
+                proveedoresResultados.classList.add("active");
+                return;
+            }
+
+            matches.slice(0, 6).forEach(p => {
+                const item = document.createElement("div");
+                item.className = "autocomplete-item";
+                item.innerHTML = `<strong>${p.nombre}</strong><span>NIT: ${p.nit || 'Sin NIT'} · Contacto: ${p.nombre_contacto || '-'}</span>`;
+                item.addEventListener("click", () => setProveedor(p));
+                proveedoresResultados.appendChild(item);
+            });
+
+            proveedoresResultados.classList.add("active");
+        });
+    }
+
+    function calcularFila(row) {
+        const cantInput = row.querySelector(".producto-cantidad");
+        const precioInput = row.querySelector(".producto-precio");
+        const ivaSelect = row.querySelector(".producto-iva");
+        const subtotalInput = row.querySelector(".producto-subtotal");
+        const idHidden = row.querySelector(".producto-id");
+        const nombreInput = row.querySelector(".producto-nombre");
+        const codigoInput = row.querySelector(".producto-codigo");
+
+        const hasProduct = (idHidden && idHidden.value) || (nombreInput && nombreInput.value.trim() !== "") || (codigoInput && codigoInput.value.trim() !== "");
+
+        const cant = parseFloat(cantInput ? cantInput.value : 0) || 0;
+        const precio = parseFloat(precioInput ? precioInput.value : 0) || 0;
+        const ivaPct = parseFloat(ivaSelect ? ivaSelect.value : 19) || 0;
+
+        const subtotal = hasProduct ? (cant * precio) : 0;
+        const iva = hasProduct ? (subtotal * (ivaPct / 100)) : 0;
+        const total = hasProduct ? (subtotal + iva) : 0;
+
+        if (subtotalInput) {
+            subtotalInput.value = formatearMoneda(subtotal);
+            subtotalInput.setAttribute("data-subtotal", subtotal);
+            subtotalInput.setAttribute("data-iva", iva);
+            subtotalInput.setAttribute("data-total", total);
+        }
+
+        calcularTotalesGenerales();
+    }
+
+    function calcularTotalesGenerales() {
+        let subtotalTotal = 0;
+        let ivaTotal = 0;
+        let granTotal = 0;
+
+        document.querySelectorAll(".producto-row").forEach(row => {
+            const subInput = row.querySelector(".producto-subtotal");
+            if (subInput) {
+                subtotalTotal += parseFloat(subInput.getAttribute("data-subtotal")) || 0;
+                ivaTotal += parseFloat(subInput.getAttribute("data-iva")) || 0;
+                granTotal += parseFloat(subInput.getAttribute("data-total")) || 0;
+            }
+        });
+
+        if (subtotalDisplay) subtotalDisplay.textContent = formatearMoneda(subtotalTotal);
+        if (ivaDisplay) ivaDisplay.textContent = formatearMoneda(ivaTotal);
+        if (totalDisplay) totalDisplay.textContent = formatearMoneda(granTotal);
+    }
+
+    function vincularFilaProducto(row) {
+        const codigoInput = row.querySelector(".producto-codigo");
+        const nombreInput = row.querySelector(".producto-nombre");
+        const idHidden = row.querySelector(".producto-id");
+        const resultsBox = row.querySelector(".productos-resultados");
+        const cantInput = row.querySelector(".producto-cantidad");
+        const precioInput = row.querySelector(".producto-precio");
+        const ivaSelect = row.querySelector(".producto-iva");
+        const deleteBtn = row.querySelector(".btn-delete-product");
+
+        function setProducto(prod) {
+            if (idHidden) idHidden.value = prod.id || "";
+            if (codigoInput) codigoInput.value = prod.codigo || "";
+            if (nombreInput) nombreInput.value = prod.nombre || "";
+            if (precioInput && (!precioInput.value || parseFloat(precioInput.value) === 0)) {
+                precioInput.value = prod.precio || 0;
+            }
+            if (resultsBox) {
+                resultsBox.innerHTML = "";
+                resultsBox.classList.remove("active");
+            }
+            calcularFila(row);
+        }
+
+        function buscarProds(texto) {
+            if (!resultsBox) return;
+            const q = normalizarTexto(texto);
+            if (!q) {
+                resultsBox.innerHTML = "";
+                resultsBox.classList.remove("active");
+                return;
+            }
+
+            const matches = productos.filter(p => {
+                return normalizarTexto(p.nombre).includes(q) || normalizarTexto(p.codigo).includes(q);
+            });
+
+            resultsBox.innerHTML = "";
+            if (matches.length === 0) {
+                resultsBox.innerHTML = `<div class="autocomplete-item"><strong>No se encontraron productos</strong></div>`;
+                resultsBox.classList.add("active");
+                return;
+            }
+
+            matches.slice(0, 8).forEach(p => {
+                const item = document.createElement("div");
+                item.className = "autocomplete-item";
+                item.innerHTML = `<strong>${p.nombre}</strong><span>Código: ${p.codigo} · Precio: $${p.precio}</span>`;
+                item.addEventListener("click", () => setProducto(p));
+                resultsBox.appendChild(item);
+            });
+
+            resultsBox.classList.add("active");
+        }
+
+        if (nombreInput) {
+            nombreInput.addEventListener("input", () => {
+                buscarProds(nombreInput.value);
+                calcularFila(row);
+            });
+        }
+
+        if (codigoInput) {
+            codigoInput.addEventListener("input", () => {
+                const cod = normalizarTexto(codigoInput.value);
+                const exact = productos.find(p => normalizarTexto(p.codigo) === cod);
+                if (exact) {
+                    setProducto(exact);
+                } else {
+                    buscarProds(codigoInput.value);
+                }
+                calcularFila(row);
+            });
+        }
+
+        if (cantInput) {
+            cantInput.addEventListener("input", () => calcularFila(row));
+            cantInput.addEventListener("change", () => calcularFila(row));
+        }
+
+        if (precioInput) {
+            precioInput.addEventListener("input", () => calcularFila(row));
+            precioInput.addEventListener("change", () => calcularFila(row));
+        }
+
+        if (ivaSelect) {
+            ivaSelect.addEventListener("change", () => calcularFila(row));
+        }
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", () => {
+                const totalFilas = document.querySelectorAll(".producto-row").length;
+                if (totalFilas > 1) {
+                    row.remove();
+                    calcularTotalesGenerales();
+                } else {
+                    if (idHidden) idHidden.value = "";
+                    if (codigoInput) codigoInput.value = "";
+                    if (nombreInput) nombreInput.value = "";
+                    if (cantInput) cantInput.value = "1";
+                    if (precioInput) precioInput.value = "";
+                    if (ivaSelect) ivaSelect.value = "19";
+                    calcularFila(row);
+                }
+            });
+        }
+
+        calcularFila(row);
+    }
+
+    document.querySelectorAll(".producto-row").forEach(row => vincularFilaProducto(row));
+
+    if (btnAgregarProducto) {
+        btnAgregarProducto.addEventListener("click", () => {
+            const tr = document.createElement("tr");
+            tr.className = "producto-row";
+            tr.innerHTML = `
+                <td>
+                    <input type="text" name="codigo[]" class="producto-codigo" placeholder="Código" autocomplete="off">
+                </td>
+                <td>
+                    <div class="autocomplete-container">
+                        <input type="text" name="producto_nombre[]" class="producto-nombre" placeholder="Buscar producto..." autocomplete="off">
+                        <input type="hidden" name="producto_id[]" class="producto-id">
+                        <div class="autocomplete-results productos-resultados"></div>
+                    </div>
+                </td>
+                <td>
+                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="1">
+                </td>
+                <td>
+                    <input type="number" name="valor_unitario[]" class="producto-precio" min="0" step="0.01" placeholder="0.00">
+                </td>
+                <td>
+                    <select name="iva_porcentaje[]" class="producto-iva">
+                        <option value="0">0%</option>
+                        <option value="5">5%</option>
+                        <option value="19" selected>19%</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="subtotal[]" class="producto-subtotal" value="$ 0,00" readonly>
+                </td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn-delete-product" title="Eliminar línea">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tablaProductos.appendChild(tr);
+            vincularFilaProducto(tr);
+            tr.querySelector(".producto-nombre")?.focus();
+        });
+    }
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".autocomplete-container")) {
+            document.querySelectorAll(".autocomplete-results").forEach(box => {
+                box.classList.remove("active");
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

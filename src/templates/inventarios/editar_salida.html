@@ -1,0 +1,493 @@
+{% extends 'inventarios/base_inventarios.html' %}
+
+{% block title %}Editar Productos de Salida {{ documento.numero_documento }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/crear_entrada.css') }}">
+<style>
+.locked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-left: 8px;
+}
+.readonly-field {
+    opacity: 0.85;
+    cursor: not-allowed !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #cbd5e1 !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="module-card wide">
+
+        <!-- =====================================================
+             ENCABEZADO
+        ====================================================== -->
+        <div class="module-header">
+            <div class="module-header-title">
+                <span class="module-kicker" style="color: #facc15;">EDICIÓN DE DOCUMENTO</span>
+                <h2>Editar Productos de Salida</h2>
+                <span class="module-subtitle">Modificación exclusiva de productos y cantidades descargadas del inventario</span>
+            </div>
+
+            <div class="invoice-number" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+                <span>No. Consecutivo</span>
+                <strong id="label-consecutivo-header" style="color: #f87171;">{{ documento.numero_documento }}</strong>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('inventarios.editar_salida', id=documento.id) }}" id="form-editar-salida" autocomplete="off">
+
+            {% if error %}
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 14px 20px; border-radius: 12px; margin: 20px 30px 0 30px; display: flex; align-items: center; gap: 10px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px;"></i>
+                <span><strong>Error:</strong> {{ error }}</span>
+            </div>
+            {% endif %}
+
+            <!-- =====================================================
+                 CABECERA BLOQUEADA (SOLO LECTURA)
+            ====================================================== -->
+            <section class="module-body" style="padding-bottom: 10px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">
+                    <span style="font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <i class="fa-solid fa-lock" style="color: #facc15; margin-right: 6px;"></i> Datos del Documento (Bloqueados)
+                    </span>
+                    <span class="locked-badge"><i class="fa-solid fa-circle-info"></i> Solo los productos son editables</span>
+                </div>
+
+                <div class="form-grid" style="grid-template-columns: 200px 240px 1fr; gap: 15px;">
+                    
+                    <!-- Fecha -->
+                    <div class="form-group">
+                        <label>Fecha de Emisión</label>
+                        <input type="text" class="readonly-field" value="{{ documento.fecha_creacion }}" readonly>
+                    </div>
+
+                    <!-- Usuario Responsable -->
+                    <div class="form-group">
+                        <label>Usuario Responsable</label>
+                        <input type="text" class="readonly-field" value="{{ documento.usuario or '-' }}" readonly>
+                    </div>
+
+                    <!-- Motivo / Observaciones -->
+                    <div class="form-group">
+                        <label>Motivo / Observaciones</label>
+                        <input type="text" class="readonly-field" value="{{ documento.observaciones or '-' }}" readonly>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 CUERPO DE EDICIÓN: TABLA DE PRODUCTOS
+            ====================================================== -->
+            <section class="products-section">
+                <div class="products-title">
+                    <div class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+                        <div>
+                            <i class="fa-solid fa-boxes-stacked" style="color: #f87171;"></i>
+                            <div>
+                                <h3>Productos a Descargar</h3>
+                                <span>Modifique los productos, cantidades a retirar y valores de referencia</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-product" id="btn-agregar-producto" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.35);">
+                        <i class="fa-solid fa-plus"></i> Agregar línea
+                    </button>
+                </div>
+
+                <div class="products-table-wrapper">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">Código</th>
+                                <th>Producto</th>
+                                <th style="width: 110px;">Cant. Salida</th>
+                                <th style="width: 140px;">Valor Unit.</th>
+                                <th style="width: 100px;">IVA</th>
+                                <th style="width: 140px;">Subtotal</th>
+                                <th style="width: 45px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tabla-productos-body">
+                            {% for d in documento.detalles %}
+                            <tr class="producto-row">
+                                <td>
+                                    <input type="text" name="codigo[]" class="producto-codigo" value="{{ d.codigo_producto or '' }}" placeholder="Código" autocomplete="off">
+                                </td>
+
+                                <td>
+                                    <div class="autocomplete-container">
+                                        <input type="text" name="producto_nombre[]" class="producto-nombre" value="{{ d.producto or '' }}" placeholder="Buscar producto..." autocomplete="off">
+                                        <input type="hidden" name="producto_id[]" class="producto-id" value="{{ d.producto_id }}">
+                                        <div class="autocomplete-results productos-resultados"></div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="{{ d.cantidad }}">
+                                </td>
+
+                                <td>
+                                    <input type="number" name="valor_unitario[]" class="producto-precio" min="0" step="0.01" value="{{ d.valor_unitario }}" placeholder="0.00">
+                                </td>
+
+                                <td>
+                                    <select name="iva_porcentaje[]" class="producto-iva">
+                                        <option value="0">0%</option>
+                                        <option value="5">5%</option>
+                                        <option value="19" selected>19%</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="subtotal[]" class="producto-subtotal" value="$ 0,00" readonly>
+                                </td>
+
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-delete-product" title="Eliminar línea">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            {% if not documento.detalles %}
+                            <tr class="producto-row">
+                                <td>
+                                    <input type="text" name="codigo[]" class="producto-codigo" placeholder="Código" autocomplete="off">
+                                </td>
+
+                                <td>
+                                    <div class="autocomplete-container">
+                                        <input type="text" name="producto_nombre[]" class="producto-nombre" placeholder="Buscar producto..." autocomplete="off">
+                                        <input type="hidden" name="producto_id[]" class="producto-id">
+                                        <div class="autocomplete-results productos-resultados"></div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="1">
+                                </td>
+
+                                <td>
+                                    <input type="number" name="valor_unitario[]" class="producto-precio" min="0" step="0.01" placeholder="0.00">
+                                </td>
+
+                                <td>
+                                    <select name="iva_porcentaje[]" class="producto-iva">
+                                        <option value="0">0%</option>
+                                        <option value="5">5%</option>
+                                        <option value="19" selected>19%</option>
+                                    </select>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="subtotal[]" class="producto-subtotal" value="$ 0,00" readonly>
+                                </td>
+
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-delete-product" title="Eliminar línea">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- RESUMEN DE TOTALES -->
+                <div class="summary-container">
+                    <div class="summary-card">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <strong id="subtotal-display">$ 0,00</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>IVA (19%)</span>
+                            <strong id="iva-display">$ 0,00</strong>
+                        </div>
+                        <div class="summary-divider"></div>
+                        <div class="summary-row summary-total">
+                            <span>Total Salida</span>
+                            <strong id="total-display" style="color: #f87171;">$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================
+                 ACCIONES
+            ====================================================== -->
+            <div class="form-actions">
+                <a href="{{ url_for('inventarios.lista_salidas') }}" class="btn cancel">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
+
+                <button type="submit" class="btn save" id="btn-guardar-cambios" style="background: linear-gradient(135deg, #eab308, #ca8a04); color: #000; font-weight: 700;">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.sigmaferProductos = {{ productos | tojson }};
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const productos = window.sigmaferProductos || [];
+    const tablaProductos = document.getElementById("tabla-productos-body");
+    const btnAgregarProducto = document.getElementById("btn-agregar-producto");
+
+    const subtotalDisplay = document.getElementById("subtotal-display");
+    const ivaDisplay = document.getElementById("iva-display");
+    const totalDisplay = document.getElementById("total-display");
+
+    function normalizarTexto(txt) {
+        return (txt || "").toString().toLowerCase().trim();
+    }
+
+    function formatearMoneda(val) {
+        const num = parseFloat(val) || 0;
+        return "$ " + num.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calcularFila(row) {
+        const cantInput = row.querySelector(".producto-cantidad");
+        const precioInput = row.querySelector(".producto-precio");
+        const ivaSelect = row.querySelector(".producto-iva");
+        const subtotalInput = row.querySelector(".producto-subtotal");
+        const idHidden = row.querySelector(".producto-id");
+        const nombreInput = row.querySelector(".producto-nombre");
+        const codigoInput = row.querySelector(".producto-codigo");
+
+        const hasProduct = (idHidden && idHidden.value) || (nombreInput && nombreInput.value.trim() !== "") || (codigoInput && codigoInput.value.trim() !== "");
+
+        const cant = parseFloat(cantInput ? cantInput.value : 0) || 0;
+        const precio = parseFloat(precioInput ? precioInput.value : 0) || 0;
+        const ivaPct = parseFloat(ivaSelect ? ivaSelect.value : 19) || 0;
+
+        const subtotal = hasProduct ? (cant * precio) : 0;
+        const iva = hasProduct ? (subtotal * (ivaPct / 100)) : 0;
+        const total = hasProduct ? (subtotal + iva) : 0;
+
+        if (subtotalInput) {
+            subtotalInput.value = formatearMoneda(subtotal);
+            subtotalInput.setAttribute("data-subtotal", subtotal);
+            subtotalInput.setAttribute("data-iva", iva);
+            subtotalInput.setAttribute("data-total", total);
+        }
+
+        calcularTotalesGenerales();
+    }
+
+    function calcularTotalesGenerales() {
+        let subtotalTotal = 0;
+        let ivaTotal = 0;
+        let granTotal = 0;
+
+        document.querySelectorAll(".producto-row").forEach(row => {
+            const subInput = row.querySelector(".producto-subtotal");
+            if (subInput) {
+                subtotalTotal += parseFloat(subInput.getAttribute("data-subtotal")) || 0;
+                ivaTotal += parseFloat(subInput.getAttribute("data-iva")) || 0;
+                granTotal += parseFloat(subInput.getAttribute("data-total")) || 0;
+            }
+        });
+
+        if (subtotalDisplay) subtotalDisplay.textContent = formatearMoneda(subtotalTotal);
+        if (ivaDisplay) ivaDisplay.textContent = formatearMoneda(ivaTotal);
+        if (totalDisplay) totalDisplay.textContent = formatearMoneda(granTotal);
+    }
+
+    function vincularFilaProducto(row) {
+        const codigoInput = row.querySelector(".producto-codigo");
+        const nombreInput = row.querySelector(".producto-nombre");
+        const idHidden = row.querySelector(".producto-id");
+        const resultsBox = row.querySelector(".productos-resultados");
+        const cantInput = row.querySelector(".producto-cantidad");
+        const precioInput = row.querySelector(".producto-precio");
+        const ivaSelect = row.querySelector(".producto-iva");
+        const deleteBtn = row.querySelector(".btn-delete-product");
+
+        function setProducto(prod) {
+            if (idHidden) idHidden.value = prod.id || "";
+            if (codigoInput) codigoInput.value = prod.codigo || "";
+            if (nombreInput) nombreInput.value = prod.nombre || "";
+            if (precioInput && (!precioInput.value || parseFloat(precioInput.value) === 0)) {
+                precioInput.value = prod.precio || 0;
+            }
+            if (resultsBox) {
+                resultsBox.innerHTML = "";
+                resultsBox.classList.remove("active");
+            }
+            calcularFila(row);
+        }
+
+        function buscarProds(texto) {
+            if (!resultsBox) return;
+            const q = normalizarTexto(texto);
+            if (!q) {
+                resultsBox.innerHTML = "";
+                resultsBox.classList.remove("active");
+                return;
+            }
+
+            const matches = productos.filter(p => {
+                return normalizarTexto(p.nombre).includes(q) || normalizarTexto(p.codigo).includes(q);
+            });
+
+            resultsBox.innerHTML = "";
+            if (matches.length === 0) {
+                resultsBox.innerHTML = `<div class="autocomplete-item"><strong>No se encontraron productos</strong></div>`;
+                resultsBox.classList.add("active");
+                return;
+            }
+
+            matches.slice(0, 8).forEach(p => {
+                const item = document.createElement("div");
+                item.className = "autocomplete-item";
+                const stockVal = p.stock !== undefined && p.stock !== null ? p.stock : 0;
+                item.innerHTML = `<strong>${p.nombre}</strong><span style="color: ${stockVal > 0 ? '#38bdf8' : '#f87171'};">Código: ${p.codigo} · Stock: ${stockVal}</span>`;
+                item.addEventListener("click", () => setProducto(p));
+                resultsBox.appendChild(item);
+            });
+
+            resultsBox.classList.add("active");
+        }
+
+        if (nombreInput) {
+            nombreInput.addEventListener("input", () => {
+                buscarProds(nombreInput.value);
+                calcularFila(row);
+            });
+        }
+
+        if (codigoInput) {
+            codigoInput.addEventListener("input", () => {
+                const cod = normalizarTexto(codigoInput.value);
+                const exact = productos.find(p => normalizarTexto(p.codigo) === cod);
+                if (exact) {
+                    setProducto(exact);
+                } else {
+                    buscarProds(codigoInput.value);
+                }
+                calcularFila(row);
+            });
+        }
+
+        if (cantInput) {
+            cantInput.addEventListener("input", () => calcularFila(row));
+            cantInput.addEventListener("change", () => calcularFila(row));
+        }
+
+        if (precioInput) {
+            precioInput.addEventListener("input", () => calcularFila(row));
+            precioInput.addEventListener("change", () => calcularFila(row));
+        }
+
+        if (ivaSelect) {
+            ivaSelect.addEventListener("change", () => calcularFila(row));
+        }
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", () => {
+                const totalFilas = document.querySelectorAll(".producto-row").length;
+                if (totalFilas > 1) {
+                    row.remove();
+                    calcularTotalesGenerales();
+                } else {
+                    if (idHidden) idHidden.value = "";
+                    if (codigoInput) codigoInput.value = "";
+                    if (nombreInput) nombreInput.value = "";
+                    if (cantInput) cantInput.value = "1";
+                    if (precioInput) precioInput.value = "";
+                    if (ivaSelect) ivaSelect.value = "19";
+                    calcularFila(row);
+                }
+            });
+        }
+
+        calcularFila(row);
+    }
+
+    document.querySelectorAll(".producto-row").forEach(row => vincularFilaProducto(row));
+
+    if (btnAgregarProducto) {
+        btnAgregarProducto.addEventListener("click", () => {
+            const tr = document.createElement("tr");
+            tr.className = "producto-row";
+            tr.innerHTML = `
+                <td>
+                    <input type="text" name="codigo[]" class="producto-codigo" placeholder="Código" autocomplete="off">
+                </td>
+                <td>
+                    <div class="autocomplete-container">
+                        <input type="text" name="producto_nombre[]" class="producto-nombre" placeholder="Buscar producto..." autocomplete="off">
+                        <input type="hidden" name="producto_id[]" class="producto-id">
+                        <div class="autocomplete-results productos-resultados"></div>
+                    </div>
+                </td>
+                <td>
+                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="1">
+                </td>
+                <td>
+                    <input type="number" name="valor_unitario[]" class="producto-precio" min="0" step="0.01" placeholder="0.00">
+                </td>
+                <td>
+                    <select name="iva_porcentaje[]" class="producto-iva">
+                        <option value="0">0%</option>
+                        <option value="5">5%</option>
+                        <option value="19" selected>19%</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="subtotal[]" class="producto-subtotal" value="$ 0,00" readonly>
+                </td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn-delete-product" title="Eliminar línea">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tablaProductos.appendChild(tr);
+            vincularFilaProducto(tr);
+            tr.querySelector(".producto-nombre")?.focus();
+        });
+    }
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".autocomplete-container")) {
+            document.querySelectorAll(".autocomplete-results").forEach(box => {
+                box.classList.remove("active");
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

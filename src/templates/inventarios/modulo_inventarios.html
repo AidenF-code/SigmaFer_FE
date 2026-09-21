@@ -337,7 +337,6 @@
 
             <article class="glass-panel">
 
-
                 <div class="panel-header">
 
                     <div class="panel-title">
@@ -350,30 +349,16 @@
 
                     </div>
 
-
-                    <a href="#"
-                       class="view-link">
-
-                        Ver todas las alertas
-
-                        <i class="fa-solid fa-arrow-right"></i>
-
-                    </a>
-
                 </div>
 
-
-
-                <!-- ALERTA 1 -->
-
-                <div class="alert-item danger">
+                <!-- ALERTA 1: BAJO STOCK -->
+                <a href="{{ url_for('inventarios.lista_productos', alerta='bajo') }}" class="alert-item danger" style="text-decoration: none; color: inherit;">
 
                     <div class="alert-icon">
 
                         <i class="fa-solid fa-triangle-exclamation"></i>
 
                     </div>
-
 
                     <div class="alert-info">
 
@@ -387,28 +372,22 @@
 
                     </div>
 
-
                     <span class="alert-number">
-                        37
+                        {{ kpis.bajo_stock }}
                     </span>
-
 
                     <i class="fa-solid fa-chevron-right item-arrow"></i>
 
-                </div>
+                </a>
 
-
-
-                <!-- ALERTA 2 -->
-
-                <div class="alert-item warning">
+                <!-- ALERTA 2: CERCANOS AL LÍMITE -->
+                <a href="{{ url_for('inventarios.lista_productos', alerta='limite') }}" class="alert-item warning" style="text-decoration: none; color: inherit;">
 
                     <div class="alert-icon">
 
                         <i class="fa-solid fa-triangle-exclamation"></i>
 
                     </div>
-
 
                     <div class="alert-info">
 
@@ -422,28 +401,22 @@
 
                     </div>
 
-
                     <span class="alert-number">
-                        12
+                        {{ kpis.cercanos_limite }}
                     </span>
-
 
                     <i class="fa-solid fa-chevron-right item-arrow"></i>
 
-                </div>
+                </a>
 
-
-
-                <!-- ALERTA 3 -->
-
-                <div class="alert-item success">
+                <!-- ALERTA 3: SOBRESTOCK -->
+                <a href="{{ url_for('inventarios.lista_productos', alerta='sobrestock') }}" class="alert-item success" style="text-decoration: none; color: inherit;">
 
                     <div class="alert-icon">
 
                         <i class="fa-solid fa-cube"></i>
 
                     </div>
-
 
                     <div class="alert-info">
 
@@ -457,26 +430,21 @@
 
                     </div>
 
-
                     <span class="alert-number">
-                        24
+                        {{ kpis.sobrestock }}
                     </span>
-
 
                     <i class="fa-solid fa-chevron-right item-arrow"></i>
 
-                </div>
+                </a>
 
             </article>
-
-
 
             <!-- ====================================== -->
             <!-- ÓRDENES PENDIENTES -->
             <!-- ====================================== -->
 
             <article class="glass-panel">
-
 
                 <div class="panel-header">
 
@@ -490,8 +458,7 @@
 
                     </div>
 
-
-                    <a href="#"
+                    <a href="{{ url_for('inventarios.lista_ordenes_compra') }}"
                        class="view-link">
 
                         Ver todas las órdenes
@@ -502,11 +469,8 @@
 
                 </div>
 
-
-
-                <!-- ORDEN 1 -->
-
-                <div class="order-item">
+                {% for orden in ordenes_pendientes %}
+                <a href="{{ url_for('inventarios.lista_ordenes_compra') }}" class="order-item" style="text-decoration: none; color: inherit;">
 
                     <div class="order-icon">
 
@@ -514,81 +478,40 @@
 
                     </div>
 
-
                     <div class="order-info">
 
                         <strong>
-                            OC-001
+                            {{ orden.numero_orden }}
                         </strong>
 
                         <span>
-                            Cliente: Distribuciones del Norte
+                            Proveedor: {{ orden.proveedor or 'Sin proveedor' }}
                         </span>
 
                     </div>
-
 
                     <span class="order-status">
                         Pendiente
                     </span>
 
-
                     <div class="order-date">
 
                         <i class="fa-regular fa-calendar"></i>
 
-                        08/08/2026
+                        {{ orden.fecha_creacion }}
 
                     </div>
-
 
                     <i class="fa-solid fa-chevron-right item-arrow"></i>
 
+                </a>
+                {% else %}
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 45px 20px; color: #94a3b8; text-align: center;">
+                    <i class="fa-solid fa-clipboard-check" style="font-size: 38px; color: #5ce4b2; margin-bottom: 12px; opacity: 0.85;"></i>
+                    <strong style="color: #e2e8f0; font-size: 16px; margin-bottom: 4px;">¡Sin pendientes!</strong>
+                    <span style="font-size: 14px; color: #8c98b9;">No hay órdenes de compra pendientes de ingreso actualmente.</span>
                 </div>
-
-
-
-                <!-- ORDEN 2 -->
-
-                <div class="order-item">
-
-                    <div class="order-icon">
-
-                        <i class="fa-regular fa-file"></i>
-
-                    </div>
-
-
-                    <div class="order-info">
-
-                        <strong>
-                            OC-002
-                        </strong>
-
-                        <span>
-                            Cliente: Ferretería la 20
-                        </span>
-
-                    </div>
-
-
-                    <span class="order-status">
-                        Pendiente
-                    </span>
-
-
-                    <div class="order-date">
-
-                        <i class="fa-regular fa-calendar"></i>
-
-                        09/08/2026
-
-                    </div>
-
-
-                    <i class="fa-solid fa-chevron-right item-arrow"></i>
-
-                </div>
+                {% endfor %}
 
             </article>
 

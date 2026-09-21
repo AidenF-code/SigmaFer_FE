@@ -252,6 +252,9 @@
                                     <label class="perm-check-label">
                                         <input type="checkbox" name="perm_inventarios_entradas_crear" {% if p.get('inventarios', {}).get('entradas', {}).get('crear') %}checked{% endif %}> Registrar Entrada
                                     </label>
+                                    <label class="perm-check-label">
+                                        <input type="checkbox" name="perm_inventarios_entradas_editar" {% if p.get('inventarios', {}).get('entradas', {}).get('editar') %}checked{% endif %}> Editar Entradas
+                                    </label>
                                 </div>
                             </div>
 
@@ -266,6 +269,9 @@
                                     </label>
                                     <label class="perm-check-label">
                                         <input type="checkbox" name="perm_inventarios_salidas_crear" {% if p.get('inventarios', {}).get('salidas', {}).get('crear') %}checked{% endif %}> Registrar Salida
+                                    </label>
+                                    <label class="perm-check-label">
+                                        <input type="checkbox" name="perm_inventarios_salidas_editar" {% if p.get('inventarios', {}).get('salidas', {}).get('editar') %}checked{% endif %}> Editar Salidas
                                     </label>
                                 </div>
                             </div>
@@ -282,6 +288,9 @@
                                     <label class="perm-check-label">
                                         <input type="checkbox" name="perm_inventarios_devoluciones_crear" {% if p.get('inventarios', {}).get('devoluciones', {}).get('crear') %}checked{% endif %}> Registrar Devolución
                                     </label>
+                                    <label class="perm-check-label">
+                                        <input type="checkbox" name="perm_inventarios_devoluciones_editar" {% if p.get('inventarios', {}).get('devoluciones', {}).get('editar') %}checked{% endif %}> Editar Devoluciones
+                                    </label>
                                 </div>
                             </div>
 
@@ -296,6 +305,9 @@
                                     </label>
                                     <label class="perm-check-label">
                                         <input type="checkbox" name="perm_inventarios_ordenes_compra_crear" {% if p.get('inventarios', {}).get('ordenes_compra', {}).get('crear') %}checked{% endif %}> Crear Órdenes
+                                    </label>
+                                    <label class="perm-check-label">
+                                        <input type="checkbox" name="perm_inventarios_ordenes_compra_editar" {% if p.get('inventarios', {}).get('ordenes_compra', {}).get('editar') %}checked{% endif %}> Editar Órdenes
                                     </label>
                                 </div>
                             </div>

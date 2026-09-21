@@ -162,9 +162,13 @@ def _extraer_permisos_del_form(form):
     for key in form.keys():
         if key.startswith('perm_'):
             # Formato: perm_<modulo>_<recurso>_<accion>
-            partes = key.split('_', 3)
-            if len(partes) == 4:
-                _, modulo, recurso, accion = partes
+            # Se omite el prefijo 'perm_' y se separa la primera parte (módulo), la última (acción) y el recurso intermedio
+            partes = key[5:].split('_')
+            if len(partes) >= 3:
+                modulo = partes[0]
+                accion = partes[-1]
+                recurso = '_'.join(partes[1:-1])
+
                 if modulo not in permisos:
                     permisos[modulo] = {}
                 if recurso not in permisos[modulo]:

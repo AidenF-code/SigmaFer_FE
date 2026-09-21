@@ -9,18 +9,57 @@
 .table-header.salidas-grid,
 .row.salidas-grid {
     display: grid;
-    grid-template-columns: 45px 130px 1.5fr 2fr 110px 90px;
+    grid-template-columns: 45px 130px 1.5fr 2fr 110px 90px 85px;
     align-items: center;
     column-gap: 12px;
 }
 .tag.salida {
     color: #f87171;
     background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
     padding: 3px 8px;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
     display: inline-block;
+}
+.btn-action-view {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.btn-action-view:hover {
+    background: rgba(56, 189, 248, 0.25);
+    border-color: #38bdf8;
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+}
+.btn-action-edit {
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.12);
+    border: 1px solid rgba(250, 204, 21, 0.25);
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.btn-action-edit:hover {
+    background: rgba(250, 204, 21, 0.25);
+    border-color: #facc15;
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
 }
 </style>
 {% endblock %}
@@ -67,6 +106,7 @@
         <span>Motivo / Observaciones</span>
         <span>Fecha</span>
         <span style="text-align: center;">Estado</span>
+        <span style="text-align: center;">Acciones</span>
     </div>
 
     <!-- TABLA -->
@@ -84,6 +124,18 @@
             <span style="color: #cbd5e1;">{{ doc.fecha_creacion }}</span>
             <div style="text-align: center;">
                 <span class="tag salida">Descargado</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <a href="{{ url_for('inventarios.ver_salida', id=doc.id) }}"
+                   class="btn-action-view"
+                   title="Ver detalle de la salida">
+                    <i class="fa-solid fa-eye"></i>
+                </a>
+                <a href="{{ url_for('inventarios.editar_salida', id=doc.id) }}"
+                   class="btn-action-edit"
+                   title="Editar productos de la salida">
+                    <i class="fa-solid fa-pen"></i>
+                </a>
             </div>
         </div>
         {% else %}

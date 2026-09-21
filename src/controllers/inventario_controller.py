@@ -8,9 +8,102 @@ inventarios_bp = Blueprint('inventarios', __name__, url_prefix='/inventarios')
 def _client():
     return APIClient(session.get('api_token'))
 
+def calcular_alerta_producto(p):
+    """
+    Determina la categoría de alerta de stock para un producto:
+    - 'bajo': stock <= stock_minimo (o stock == 0)
+    - 'sobrestock': stock_maximo definido y stock >= stock_maximo
+    - 'limite': stock_minimo > 0 y stock > stock_minimo pero stock <= min(stock_minimo * 1.25, stock_minimo + 5)
+    - 'normal': dentro de los rangos óptimos
+    """
+    try:
+        stock = float(p.get('stock') or 0)
+        stock_min = float(p.get('stock_minimo') or 0)
+        stock_max_val = p.get('stock_maximo')
+        stock_max = float(stock_max_val) if stock_max_val is not None and str(stock_max_val).strip() != '' else None
+    except (ValueError, TypeError):
+        return 'normal'
+
+    if stock <= stock_min:
+        return 'bajo'
+    elif stock_max is not None and stock_max > 0 and stock >= stock_max:
+        return 'sobrestock'
+    elif stock_min > 0 and stock <= max(stock_min * 1.25, stock_min + 3):
+        return 'limite'
+    return 'normal'
+
+
 @inventarios_bp.route('/')
 def inicio():
-    return render_template('inventarios/modulo_inventarios.html')
+    # 1. Cargar productos y calcular alertas de stock
+    try:
+        data_prods = _client().get('/productos/')
+        productos = APIClient.as_list(data_prods)
+    except APIError:
+        productos = []
+
+    kpis = {
+        'bajo_stock': 0,
+        'cercanos_limite': 0,
+        'sobrestock': 0
+    }
+
+    for p in productos:
+        alerta = calcular_alerta_producto(p)
+        if alerta == 'bajo':
+            kpis['bajo_stock'] += 1
+        elif alerta == 'limite':
+            kpis['cercanos_limite'] += 1
+        elif alerta == 'sobrestock':
+            kpis['sobrestock'] += 1
+
+    # 2. Cargar órdenes de compra y documentos de inventario para filtrar órdenes pendientes
+    try:
+        data_ordenes = _client().get('/ordenes_compra/')
+        ordenes = APIClient.as_list(data_ordenes)
+    except APIError:
+        ordenes = []
+
+    try:
+        data_docs = _client().get('/documentos_inventario/')
+        documentos = APIClient.as_list(data_docs)
+    except APIError:
+        documentos = []
+
+    # Extraer OCs registradas en documentos de entrada
+    import re
+    ocs_ingresadas = set()
+    for doc in documentos:
+        tipo = str(doc.get('tipo_documento', '')).lower()
+        num_doc = str(doc.get('numero_documento', '')).upper()
+        # Verificar si es documento de entrada
+        if 'entrada' in tipo or 'compra' in tipo or 'ajuste' in tipo or num_doc.startswith('CO-') or num_doc.startswith('EN-'):
+            obs = str(doc.get('observaciones', '')).upper()
+            # Buscar menciones de OC-xxxxx o números de orden
+            oc_matches = re.findall(r'OC-?\d+', obs)
+            for m in oc_matches:
+                ocs_ingresadas.add(m.replace(' ', ''))
+            for oc in ordenes:
+                num = str(oc.get('numero_orden', '')).strip().upper()
+                if num and num in obs:
+                    ocs_ingresadas.add(num)
+
+    ordenes_pendientes = []
+    for orden in ordenes:
+        num_orden = str(orden.get('numero_orden', '')).strip().upper().replace(' ', '')
+        estado = orden.get('estado')
+        # Si no ha sido registrada en ninguna entrada y su estado no es inactivo/cerrado
+        if num_orden not in ocs_ingresadas and estado is not False:
+            ordenes_pendientes.append(orden)
+
+    # Ordenar por id desc (las más recientes primero)
+    ordenes_pendientes.sort(key=lambda x: x.get('id', 0), reverse=True)
+
+    return render_template(
+        'inventarios/modulo_inventarios.html',
+        kpis=kpis,
+        ordenes_pendientes=ordenes_pendientes
+    )
 
 
 # ==========================================
@@ -112,12 +205,17 @@ def crear_producto():
 def lista_productos():
 
     q = request.args.get('q', '').strip()
+    alerta = request.args.get('alerta', '').strip()
 
     try:
         data = _client().get('/productos/')
         productos = APIClient.as_list(data)
     except APIError as e:
         productos = []
+
+    # Asignar alerta_tipo a cada producto para filtrado y estilo en vista
+    for p in productos:
+        p['alerta_tipo'] = calcular_alerta_producto(p)
 
     try:
         proveedores_data = _client().get('/proveedores/')
@@ -136,7 +234,8 @@ def lista_productos():
         productos=productos,
         proveedores=proveedores,
         categorias=categorias,
-        q=q
+        q=q,
+        alerta_seleccionada=alerta
     )
 
 
@@ -521,6 +620,108 @@ def ver_entrada(id):
     return render_template('inventarios/ver_entrada.html', documento=documento)
 
 
+@inventarios_bp.route('/editar_entrada/<int:id>', methods=['GET', 'POST'])
+def editar_entrada(id):
+    try:
+        documento = _client().get(f'/documentos_inventario/{id}')
+    except APIError as e:
+        flash(f'Error al obtener el documento de entrada: {e.message}', 'error')
+        return redirect(url_for('inventarios.lista_entradas'))
+
+    try:
+        productos_data = _client().get('/productos/')
+        productos = APIClient.as_list(productos_data)
+    except APIError:
+        productos = []
+
+    prod_map = {p.get('id'): p for p in productos}
+    if documento and isinstance(documento, dict):
+        for d in documento.get('detalles', []):
+            p_id = d.get('producto_id')
+            if p_id in prod_map:
+                if not d.get('producto'):
+                    d['producto'] = prod_map[p_id].get('nombre', '')
+                if not d.get('codigo_producto'):
+                    d['codigo_producto'] = prod_map[p_id].get('codigo', '')
+
+    if request.method == 'POST':
+        productos_ids = request.form.getlist('producto_id[]')
+        codigos = request.form.getlist('codigo[]')
+        nombres_prods = request.form.getlist('producto_nombre[]')
+        cantidades = request.form.getlist('cantidad[]')
+        valores_unitarios = request.form.getlist('valor_unitario[]')
+
+        total_filas = max(len(productos_ids), len(codigos), len(nombres_prods), len(cantidades))
+        detalles = []
+
+        for i in range(total_filas):
+            p_id = (productos_ids[i] or '').strip() if i < len(productos_ids) else ''
+            cod = (codigos[i] or '').strip() if i < len(codigos) else ''
+            nom = (nombres_prods[i] or '').strip() if i < len(nombres_prods) else ''
+            cant_str = (cantidades[i] or '0').strip() if i < len(cantidades) else '0'
+            val_str = (valores_unitarios[i] or '0').strip() if i < len(valores_unitarios) else '0'
+
+            if not p_id and (cod or nom):
+                for p in productos:
+                    p_cod = str(p.get('codigo', '')).strip().lower()
+                    p_nom = str(p.get('nombre', '')).strip().lower()
+                    if cod and p_cod == cod.lower():
+                        p_id = str(p.get('id'))
+                        break
+                    elif nom and (p_nom == nom.lower() or nom.lower() in p_nom):
+                        p_id = str(p.get('id'))
+                        break
+
+            if p_id and str(p_id).isdigit() and int(p_id) > 0:
+                try:
+                    val_clean = str(val_str).replace('$', '').replace(' ', '').replace('\xa0', '')
+                    if ',' in val_clean and '.' in val_clean:
+                        val_clean = val_clean.replace('.', '').replace(',', '.')
+                    elif ',' in val_clean:
+                        val_clean = val_clean.replace(',', '.')
+
+                    cant = int(cant_str) if str(cant_str).isdigit() else 1
+                    val = float(val_clean)
+                    if cant > 0:
+                        detalles.append({
+                            'producto_id': int(p_id),
+                            'cantidad': cant,
+                            'valor_unitario': val
+                        })
+                except (ValueError, TypeError):
+                    pass
+
+        if not detalles:
+            return render_template(
+                'inventarios/editar_entrada.html',
+                documento=documento,
+                productos=productos,
+                error='Debes ingresar al menos un producto válido.'
+            )
+
+        payload = {
+            'detalles': detalles
+        }
+
+        try:
+            _client().put(f'/documentos_inventario/{id}', json=payload)
+            flash('Productos de la entrada de inventario actualizados exitosamente', 'success')
+            return redirect(url_for('inventarios.lista_entradas'))
+        except APIError as e:
+            return render_template(
+                'inventarios/editar_entrada.html',
+                documento=documento,
+                productos=productos,
+                error=e.message
+            )
+
+    return render_template(
+        'inventarios/editar_entrada.html',
+        documento=documento,
+        productos=productos
+    )
+
+
 
 @inventarios_bp.route('/crear_salida', methods=['GET', 'POST'])
 def crear_salida():
@@ -640,6 +841,134 @@ def lista_salidas():
     except APIError:
         documentos = []
     return render_template('inventarios/lista_salidas.html', documentos=documentos)
+
+
+@inventarios_bp.route('/ver_salida/<int:id>')
+def ver_salida(id):
+    try:
+        documento = _client().get(f'/documentos_inventario/{id}')
+    except APIError as e:
+        flash(f'Error al obtener el documento de salida: {e.message}', 'error')
+        return redirect(url_for('inventarios.lista_salidas'))
+
+    try:
+        productos_data = _client().get('/productos/')
+        productos = APIClient.as_list(productos_data)
+        prod_map = {p.get('id'): p for p in productos}
+        if documento and isinstance(documento, dict):
+            for d in documento.get('detalles', []):
+                p_id = d.get('producto_id')
+                if p_id in prod_map:
+                    if not d.get('producto'):
+                        d['producto'] = prod_map[p_id].get('nombre', '')
+                    if not d.get('codigo_producto'):
+                        d['codigo_producto'] = prod_map[p_id].get('codigo', '')
+    except Exception:
+        pass
+
+    return render_template('inventarios/ver_salida.html', documento=documento)
+
+
+@inventarios_bp.route('/editar_salida/<int:id>', methods=['GET', 'POST'])
+def editar_salida(id):
+    try:
+        documento = _client().get(f'/documentos_inventario/{id}')
+    except APIError as e:
+        flash(f'Error al obtener el documento de salida: {e.message}', 'error')
+        return redirect(url_for('inventarios.lista_salidas'))
+
+    try:
+        productos_data = _client().get('/productos/')
+        productos = APIClient.as_list(productos_data)
+    except APIError:
+        productos = []
+
+    prod_map = {p.get('id'): p for p in productos}
+    if documento and isinstance(documento, dict):
+        for d in documento.get('detalles', []):
+            p_id = d.get('producto_id')
+            if p_id in prod_map:
+                if not d.get('producto'):
+                    d['producto'] = prod_map[p_id].get('nombre', '')
+                if not d.get('codigo_producto'):
+                    d['codigo_producto'] = prod_map[p_id].get('codigo', '')
+
+    if request.method == 'POST':
+        productos_ids = request.form.getlist('producto_id[]')
+        codigos = request.form.getlist('codigo[]')
+        nombres_prods = request.form.getlist('producto_nombre[]')
+        cantidades = request.form.getlist('cantidad[]')
+        valores_unitarios = request.form.getlist('valor_unitario[]')
+
+        total_filas = max(len(productos_ids), len(codigos), len(nombres_prods), len(cantidades))
+        detalles = []
+
+        for i in range(total_filas):
+            p_id = (productos_ids[i] or '').strip() if i < len(productos_ids) else ''
+            cod = (codigos[i] or '').strip() if i < len(codigos) else ''
+            nom = (nombres_prods[i] or '').strip() if i < len(nombres_prods) else ''
+            cant_str = (cantidades[i] or '0').strip() if i < len(cantidades) else '0'
+            val_str = (valores_unitarios[i] or '0').strip() if i < len(valores_unitarios) else '0'
+
+            if not p_id and (cod or nom):
+                for p in productos:
+                    p_cod = str(p.get('codigo', '')).strip().lower()
+                    p_nom = str(p.get('nombre', '')).strip().lower()
+                    if cod and p_cod == cod.lower():
+                        p_id = str(p.get('id'))
+                        break
+                    elif nom and (p_nom == nom.lower() or nom.lower() in p_nom):
+                        p_id = str(p.get('id'))
+                        break
+
+            if p_id and str(p_id).isdigit() and int(p_id) > 0:
+                try:
+                    val_clean = str(val_str).replace('$', '').replace(' ', '').replace('\xa0', '')
+                    if ',' in val_clean and '.' in val_clean:
+                        val_clean = val_clean.replace('.', '').replace(',', '.')
+                    elif ',' in val_clean:
+                        val_clean = val_clean.replace(',', '.')
+
+                    cant = int(cant_str) if str(cant_str).isdigit() else 1
+                    val = float(val_clean)
+                    if cant > 0:
+                        detalles.append({
+                            'producto_id': int(p_id),
+                            'cantidad': cant,
+                            'valor_unitario': val
+                        })
+                except (ValueError, TypeError):
+                    pass
+
+        if not detalles:
+            return render_template(
+                'inventarios/editar_salida.html',
+                documento=documento,
+                productos=productos,
+                error='Debes ingresar al menos un producto válido para descargar.'
+            )
+
+        payload = {
+            'detalles': detalles
+        }
+
+        try:
+            _client().put(f'/documentos_inventario/{id}', json=payload)
+            flash('Productos de la salida de inventario actualizados exitosamente', 'success')
+            return redirect(url_for('inventarios.lista_salidas'))
+        except APIError as e:
+            return render_template(
+                'inventarios/editar_salida.html',
+                documento=documento,
+                productos=productos,
+                error=e.message
+            )
+
+    return render_template(
+        'inventarios/editar_salida.html',
+        documento=documento,
+        productos=productos
+    )
 
 
 @inventarios_bp.route('/crear_orden_compra', methods=['GET', 'POST'])
@@ -777,7 +1106,212 @@ def lista_ordenes_compra():
         ordenes = APIClient.as_list(ordenes_data)
     except APIError:
         ordenes = []
+
+    try:
+        data_docs = _client().get('/documentos_inventario/')
+        documentos = APIClient.as_list(data_docs)
+    except APIError:
+        documentos = []
+
+    import re
+    ocs_ingresadas = set()
+    for doc in documentos:
+        tipo = str(doc.get('tipo_documento', '')).lower()
+        num_doc = str(doc.get('numero_documento', '')).upper()
+        if 'entrada' in tipo or 'compra' in tipo or 'ajuste' in tipo or num_doc.startswith('CO-') or num_doc.startswith('EN-'):
+            obs = str(doc.get('observaciones', '')).upper()
+            oc_matches = re.findall(r'OC-?\d+', obs)
+            for m in oc_matches:
+                ocs_ingresadas.add(m.replace(' ', ''))
+            for oc in ordenes:
+                num = str(oc.get('numero_orden', '')).strip().upper()
+                if num and num in obs:
+                    ocs_ingresadas.add(num)
+
+    for orden in ordenes:
+        num_orden = str(orden.get('numero_orden', '')).strip().upper().replace(' ', '')
+        if num_orden in ocs_ingresadas or orden.get('estado') is False:
+            orden['estado_ingreso'] = 'ingresado'
+        else:
+            orden['estado_ingreso'] = 'pendiente'
+
     return render_template('inventarios/lista_ordenes_compra.html', ordenes=ordenes)
+
+
+@inventarios_bp.route('/ver_orden_compra/<int:id>')
+def ver_orden_compra(id):
+    try:
+        orden = _client().get(f'/ordenes_compra/{id}')
+    except APIError as e:
+        flash(f'Error al obtener la orden de compra: {e.message}', 'error')
+        return redirect(url_for('inventarios.lista_ordenes_compra'))
+
+    # Comprobar si está ingresada
+    try:
+        data_docs = _client().get('/documentos_inventario/')
+        documentos = APIClient.as_list(data_docs)
+    except APIError:
+        documentos = []
+
+    num_orden = str(orden.get('numero_orden', '')).strip().upper().replace(' ', '')
+    es_ingresada = False
+    if orden.get('estado') is False:
+        es_ingresada = True
+    else:
+        for doc in documentos:
+            tipo = str(doc.get('tipo_documento', '')).lower()
+            num_doc = str(doc.get('numero_documento', '')).upper()
+            if 'entrada' in tipo or 'compra' in tipo or 'ajuste' in tipo or num_doc.startswith('CO-') or num_doc.startswith('EN-'):
+                obs = str(doc.get('observaciones', '')).upper()
+                if num_orden in obs or num_orden.replace('-', '') in obs:
+                    es_ingresada = True
+                    break
+
+    orden['estado_ingreso'] = 'ingresado' if es_ingresada else 'pendiente'
+
+    proveedor_id = orden.get('proveedor_id')
+    proveedor_data = None
+    if proveedor_id:
+        try:
+            proveedor_data = _client().get(f'/proveedores/{proveedor_id}')
+        except APIError:
+            proveedor_data = None
+
+    return render_template(
+        'inventarios/ver_orden_compra.html',
+        orden=orden,
+        proveedor_info=proveedor_data
+    )
+
+
+@inventarios_bp.route('/editar_orden_compra/<int:id>', methods=['GET', 'POST'])
+def editar_orden_compra(id):
+    try:
+        orden = _client().get(f'/ordenes_compra/{id}')
+    except APIError as e:
+        flash(f'Error al obtener la orden de compra: {e.message}', 'error')
+        return redirect(url_for('inventarios.lista_ordenes_compra'))
+
+    try:
+        proveedores_data = _client().get('/proveedores/')
+        proveedores = APIClient.as_list(proveedores_data)
+    except APIError:
+        proveedores = []
+
+    try:
+        productos_data = _client().get('/productos/')
+        productos = APIClient.as_list(productos_data)
+    except APIError:
+        productos = []
+
+    try:
+        usuarios_data = _client().get('/usuarios/')
+        usuarios = APIClient.as_list(usuarios_data)
+    except APIError:
+        usuarios = []
+
+    if request.method == 'POST':
+        proveedor_id = request.form.get('proveedor_id')
+        usuario_id = request.form.get('usuario_id')
+        observaciones = (request.form.get('observaciones') or '').strip()
+
+        if not proveedor_id or not str(proveedor_id).isdigit():
+            busqueda_prov = (request.form.get('proveedor_busqueda') or request.form.get('nit_proveedor') or '').strip().lower()
+            for p in proveedores:
+                p_nom = str(p.get('nombre', '')).strip().lower()
+                p_nit = str(p.get('nit', '')).strip().lower()
+                if busqueda_prov and (busqueda_prov in p_nom or busqueda_prov == p_nit):
+                    proveedor_id = p.get('id')
+                    break
+
+        if not usuario_id or not str(usuario_id).isdigit():
+            if usuarios:
+                usuario_id = usuarios[0].get('id')
+
+        productos_ids = request.form.getlist('producto_id[]')
+        codigos = request.form.getlist('codigo[]')
+        nombres_prods = request.form.getlist('producto_nombre[]')
+        cantidades = request.form.getlist('cantidad[]')
+        valores_unitarios = request.form.getlist('valor_unitario[]')
+
+        total_filas = max(len(productos_ids), len(codigos), len(nombres_prods), len(cantidades))
+        detalles = []
+
+        for i in range(total_filas):
+            p_id = (productos_ids[i] or '').strip() if i < len(productos_ids) else ''
+            cod = (codigos[i] or '').strip() if i < len(codigos) else ''
+            nom = (nombres_prods[i] or '').strip() if i < len(nombres_prods) else ''
+            cant_str = (cantidades[i] or '0').strip() if i < len(cantidades) else '0'
+            val_str = (valores_unitarios[i] or '0').strip() if i < len(valores_unitarios) else '0'
+
+            if not p_id and (cod or nom):
+                for p in productos:
+                    p_cod = str(p.get('codigo', '')).strip().lower()
+                    p_nom = str(p.get('nombre', '')).strip().lower()
+                    if cod and p_cod == cod.lower():
+                        p_id = str(p.get('id'))
+                        break
+                    elif nom and (p_nom == nom.lower() or nom.lower() in p_nom):
+                        p_id = str(p.get('id'))
+                        break
+
+            if p_id and str(p_id).isdigit() and int(p_id) > 0:
+                try:
+                    val_clean = str(val_str).replace('$', '').replace(' ', '').replace('\xa0', '')
+                    if ',' in val_clean and '.' in val_clean:
+                        val_clean = val_clean.replace('.', '').replace(',', '.')
+                    elif ',' in val_clean:
+                        val_clean = val_clean.replace(',', '.')
+
+                    cant = int(cant_str) if str(cant_str).isdigit() else 1
+                    val = float(val_clean)
+                    if cant > 0:
+                        detalles.append({
+                            'producto_id': int(p_id),
+                            'cantidad': cant,
+                            'valor_unitario': val
+                        })
+                except (ValueError, TypeError):
+                    pass
+
+        if not detalles:
+            return render_template(
+                'inventarios/editar_orden_compra.html',
+                orden=orden,
+                proveedores=proveedores,
+                productos=productos,
+                usuarios=usuarios,
+                error='Debes incluir al menos un producto en la orden de compra.'
+            )
+
+        payload = {
+            'proveedor_id': int(proveedor_id) if proveedor_id and str(proveedor_id).isdigit() else orden.get('proveedor_id'),
+            'usuario_id': int(usuario_id) if usuario_id and str(usuario_id).isdigit() else orden.get('usuario_id'),
+            'observaciones': observaciones,
+            'detalles': detalles
+        }
+
+        try:
+            _client().put(f'/ordenes_compra/{id}', json=payload)
+            flash('Orden de compra actualizada exitosamente', 'success')
+            return redirect(url_for('inventarios.lista_ordenes_compra'))
+        except APIError as e:
+            return render_template(
+                'inventarios/editar_orden_compra.html',
+                orden=orden,
+                proveedores=proveedores,
+                productos=productos,
+                usuarios=usuarios,
+                error=e.message
+            )
+
+    return render_template(
+        'inventarios/editar_orden_compra.html',
+        orden=orden,
+        proveedores=proveedores,
+        productos=productos,
+        usuarios=usuarios
+    )
 
 
 @inventarios_bp.route('/crear_devolucion', methods=['GET', 'POST'])
@@ -989,6 +1523,108 @@ def ver_devolucion(id):
         pass
 
     return render_template('inventarios/ver_devolucion.html', documento=documento)
+
+
+@inventarios_bp.route('/editar_devolucion/<int:id>', methods=['GET', 'POST'])
+def editar_devolucion(id):
+    try:
+        documento = _client().get(f'/documentos_inventario/{id}')
+    except APIError as e:
+        flash(f'Error al obtener el documento de devolución: {e.message}', 'error')
+        return redirect(url_for('inventarios.lista_devoluciones'))
+
+    try:
+        productos_data = _client().get('/productos/')
+        productos = APIClient.as_list(productos_data)
+    except APIError:
+        productos = []
+
+    prod_map = {p.get('id'): p for p in productos}
+    if documento and isinstance(documento, dict):
+        for d in documento.get('detalles', []):
+            p_id = d.get('producto_id')
+            if p_id in prod_map:
+                if not d.get('producto'):
+                    d['producto'] = prod_map[p_id].get('nombre', '')
+                if not d.get('codigo_producto'):
+                    d['codigo_producto'] = prod_map[p_id].get('codigo', '')
+
+    if request.method == 'POST':
+        productos_ids = request.form.getlist('producto_id[]')
+        codigos = request.form.getlist('codigo[]')
+        nombres_prods = request.form.getlist('producto_nombre[]')
+        cantidades = request.form.getlist('cantidad[]')
+        valores_unitarios = request.form.getlist('valor_unitario[]')
+
+        total_filas = max(len(productos_ids), len(codigos), len(nombres_prods), len(cantidades))
+        detalles = []
+
+        for i in range(total_filas):
+            p_id = (productos_ids[i] or '').strip() if i < len(productos_ids) else ''
+            cod = (codigos[i] or '').strip() if i < len(codigos) else ''
+            nom = (nombres_prods[i] or '').strip() if i < len(nombres_prods) else ''
+            cant_str = (cantidades[i] or '0').strip() if i < len(cantidades) else '0'
+            val_str = (valores_unitarios[i] or '0').strip() if i < len(valores_unitarios) else '0'
+
+            if not p_id and (cod or nom):
+                for p in productos:
+                    p_cod = str(p.get('codigo', '')).strip().lower()
+                    p_nom = str(p.get('nombre', '')).strip().lower()
+                    if cod and p_cod == cod.lower():
+                        p_id = str(p.get('id'))
+                        break
+                    elif nom and (p_nom == nom.lower() or nom.lower() in p_nom):
+                        p_id = str(p.get('id'))
+                        break
+
+            if p_id and str(p_id).isdigit() and int(p_id) > 0:
+                try:
+                    val_clean = str(val_str).replace('$', '').replace(' ', '').replace('\xa0', '')
+                    if ',' in val_clean and '.' in val_clean:
+                        val_clean = val_clean.replace('.', '').replace(',', '.')
+                    elif ',' in val_clean:
+                        val_clean = val_clean.replace(',', '.')
+
+                    cant = int(cant_str) if str(cant_str).isdigit() else 1
+                    val = float(val_clean)
+                    if cant > 0:
+                        detalles.append({
+                            'producto_id': int(p_id),
+                            'cantidad': cant,
+                            'valor_unitario': val
+                        })
+                except (ValueError, TypeError):
+                    pass
+
+        if not detalles:
+            return render_template(
+                'inventarios/editar_devolucion.html',
+                documento=documento,
+                productos=productos,
+                error='Debes ingresar al menos un producto válido para la devolución.'
+            )
+
+        payload = {
+            'detalles': detalles
+        }
+
+        try:
+            _client().put(f'/documentos_inventario/{id}', json=payload)
+            flash('Devolución de inventario actualizada exitosamente. Stock reajustado.', 'success')
+            return redirect(url_for('inventarios.lista_devoluciones'))
+        except APIError as e:
+            return render_template(
+                'inventarios/editar_devolucion.html',
+                documento=documento,
+                productos=productos,
+                error=e.message
+            )
+
+    return render_template(
+        'inventarios/editar_devolucion.html',
+        documento=documento,
+        productos=productos
+    )
 
 
 # ==========================================

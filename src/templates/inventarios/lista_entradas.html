@@ -9,7 +9,7 @@
 .table-header.entradas-grid,
 .row.entradas-grid {
     display: grid;
-    grid-template-columns: 45px 130px 105px 1.5fr 1.6fr 110px 95px 65px;
+    grid-template-columns: 45px 130px 105px 1.5fr 1.6fr 110px 95px 85px;
     align-items: center;
     column-gap: 12px;
 }
@@ -51,6 +51,25 @@
     border-color: #38bdf8;
     transform: translateY(-1px);
     box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+}
+.btn-action-edit {
+    color: #facc15;
+    background: rgba(250, 204, 21, 0.12);
+    border: 1px solid rgba(250, 204, 21, 0.25);
+    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.btn-action-edit:hover {
+    background: rgba(250, 204, 21, 0.25);
+    border-color: #facc15;
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
 }
 </style>
 {% endblock %}
@@ -134,11 +153,16 @@
             <div style="text-align: center;">
                 <span class="activo">Ingresado</span>
             </div>
-            <div style="text-align: center;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                 <a href="{{ url_for('inventarios.ver_entrada', id=doc.id) }}"
                    class="btn-action-view"
                    title="Ver detalle de la entrada">
                     <i class="fa-solid fa-eye"></i>
+                </a>
+                <a href="{{ url_for('inventarios.editar_entrada', id=doc.id) }}"
+                   class="btn-action-edit"
+                   title="Editar productos de la entrada">
+                    <i class="fa-solid fa-pen"></i>
                 </a>
             </div>
         </div>

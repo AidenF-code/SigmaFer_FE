@@ -552,6 +552,12 @@ body {
 
     transition: .3s;
 
+    cursor: pointer;
+
+    text-decoration: none;
+
+    color: inherit;
+
 }
 
 
@@ -738,6 +744,25 @@ body {
 
     border:
         1px solid rgba(255,255,255,.045);
+
+    transition: .3s;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    color: inherit;
+
+}
+
+
+.order-item:hover {
+
+    transform:
+        translateX(4px);
+
+    background:
+        rgba(255,255,255,.055);
 
 }
 

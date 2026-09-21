@@ -13,7 +13,22 @@
     
     <!-- HEADER -->
     <div class="module-header">
-        <h2>Productos</h2>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <h2>Productos</h2>
+            {% if alerta_seleccionada == 'bajo' %}
+                <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4);">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Bajo Stock
+                </span>
+            {% elif alerta_seleccionada == 'limite' %}
+                <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4);">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Cercanos al Límite
+                </span>
+            {% elif alerta_seleccionada == 'sobrestock' %}
+                <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4);">
+                    <i class="fa-solid fa-cube"></i> Con Sobrestock
+                </span>
+            {% endif %}
+        </div>
         
         <div class="window-actions">
             <a href="{{ url_for('inventarios.inicio') }}" class="btn-close-pro" title="Volver al menú">
@@ -32,6 +47,14 @@
         
         <!-- FILTROS -->
         <div class="filters">
+            <select id="filtro-alerta">
+                <option value="">Todas las Alertas</option>
+                <option value="bajo" {% if alerta_seleccionada == 'bajo' %}selected{% endif %}>Bajo stock</option>
+                <option value="limite" {% if alerta_seleccionada == 'limite' %}selected{% endif %}>Cercano al límite</option>
+                <option value="sobrestock" {% if alerta_seleccionada == 'sobrestock' %}selected{% endif %}>Sobrestock</option>
+                <option value="normal" {% if alerta_seleccionada == 'normal' %}selected{% endif %}>Stock normal</option>
+            </select>
+
             <select id="filtro-estado">
                 <option value="">Todos los Estados</option>
                 <option value="activo">Activo</option>
@@ -79,13 +102,14 @@
              data-codigo="{{ (productos.codigo or '') | lower }}"
              data-categoria="{{ (productos.categoria or '') | lower }}"
              data-proveedor="{{ (productos.proveedor or '') | lower }}"
-             data-estado="{{ 'activo' if productos.estado else 'inactivo' }}">
+             data-estado="{{ 'activo' if productos.estado else 'inactivo' }}"
+             data-alerta="{{ productos.alerta_tipo }}">
             <span>{{ loop.index }}</span>
             <span style="color: #60a5fa; font-weight: 500;">{{ productos.codigo }}</span>
             <strong style="color: #ffffff;">{{ productos.nombre }}</strong>
             <span style="color: #cbd5e1;">{{ productos.categoria or 'Sin categoría' }}</span>
             <span style="color: #94a3b8;">{{ productos.proveedor or 'Sin proveedor' }}</span>
-            <span style="font-weight: 600; color: {% if (productos.stock | float) <= (productos.stock_minimo | float) %}#ef4444{% else %}#22c55e{% endif %};">
+            <span style="font-weight: 600; color: {% if productos.alerta_tipo == 'bajo' %}#ef4444{% elif productos.alerta_tipo == 'limite' %}#f59e0b{% elif productos.alerta_tipo == 'sobrestock' %}#22c55e{% else %}#38bdf8{% endif %};">
                 {{ productos.stock }}
             </span>
             <span>{{ productos.stock_minimo }}</span>
@@ -123,6 +147,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const inputBusqueda = document.getElementById("input-busqueda-producto");
+    const filtroAlerta = document.getElementById("filtro-alerta");
     const filtroEstado = document.getElementById("filtro-estado");
     const filtroProveedor = document.getElementById("filtro-proveedor");
     const filtroCategoria = document.getElementById("filtro-categoria");
@@ -134,22 +159,25 @@ document.addEventListener("DOMContentLoaded", () => {
         itemsPerPageDefault: 10,
         filterCallback: (fila) => {
             const texto = (inputBusqueda?.value || "").trim().toLowerCase();
+            const alerta = (filtroAlerta?.value || "").trim().toLowerCase();
             const estado = (filtroEstado?.value || "").trim().toLowerCase();
             const proveedor = (filtroProveedor?.value || "").trim().toLowerCase();
             const categoria = (filtroCategoria?.value || "").trim().toLowerCase();
 
             const nombre = fila.getAttribute("data-nombre") || "";
             const codigo = fila.getAttribute("data-codigo") || "";
+            const fAlerta = fila.getAttribute("data-alerta") || "";
             const fEstado = fila.getAttribute("data-estado") || "";
             const fProveedor = fila.getAttribute("data-proveedor") || "";
             const fCategoria = fila.getAttribute("data-categoria") || "";
 
             const coincideTexto = !texto || nombre.includes(texto) || codigo.includes(texto);
+            const coincideAlerta = !alerta || fAlerta === alerta;
             const coincideEstado = !estado || fEstado === estado;
             const coincideProveedor = !proveedor || fProveedor.includes(proveedor);
             const coincideCategoria = !categoria || fCategoria.includes(categoria);
 
-            return coincideTexto && coincideEstado && coincideProveedor && coincideCategoria;
+            return coincideTexto && coincideAlerta && coincideEstado && coincideProveedor && coincideCategoria;
         }
     });
 
@@ -159,6 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (inputBusqueda) inputBusqueda.addEventListener("input", triggerUpdate);
+    if (filtroAlerta) filtroAlerta.addEventListener("change", triggerUpdate);
     if (filtroEstado) filtroEstado.addEventListener("change", triggerUpdate);
     if (filtroProveedor) filtroProveedor.addEventListener("change", triggerUpdate);
     if (filtroCategoria) filtroCategoria.addEventListener("change", triggerUpdate);
