@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 <style>
 .table-header.devoluciones-grid,
 .row.devoluciones-grid {
@@ -127,43 +128,41 @@
 
     </div>
 
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-devoluciones"></div>
+
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const inputBusqueda = document.getElementById("input-busqueda-devoluciones");
-    const filas = document.querySelectorAll(".fila-devolucion");
-    const sinResultados = document.getElementById("sin-resultados-devoluciones");
 
-    function filtrarDevoluciones() {
-        const texto = inputBusqueda.value.trim().toLowerCase();
-        let visibles = 0;
-
-        filas.forEach(fila => {
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-devoluciones",
+        rowsSelector: "#tabla-devoluciones-body .fila-devolucion",
+        noResultsId: "sin-resultados-devoluciones",
+        itemsPerPageDefault: 10,
+        filterCallback: (fila) => {
+            const texto = (inputBusqueda?.value || "").trim().toLowerCase();
             const doc = fila.getAttribute("data-doc") || "";
             const cli = fila.getAttribute("data-cli") || "";
             const obs = fila.getAttribute("data-obs") || "";
             const user = fila.getAttribute("data-user") || "";
 
-            const coincide = !texto || doc.includes(texto) || cli.includes(texto) || obs.includes(texto) || user.includes(texto);
-
-            if (coincide) {
-                fila.style.display = "grid";
-                visibles++;
-            } else {
-                fila.style.display = "none";
-            }
-        });
-
-        if (sinResultados) {
-            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+            return !texto || doc.includes(texto) || cli.includes(texto) || obs.includes(texto) || user.includes(texto);
         }
-    }
+    });
 
-    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarDevoluciones);
+    if (inputBusqueda) {
+        inputBusqueda.addEventListener("input", () => {
+            paginador.currentPage = 1;
+            paginador.actualizar();
+        });
+    }
 });
 </script>
 {% endblock %}

@@ -2162,6 +2162,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
+       INICIALIZACIÓN DE FILAS PRECARGADAS (EDICIÓN)
+    ===================================================== */
+
+    function inicializarFilasExistentes() {
+        if (!tablaProductos) return;
+        const filas = tablaProductos.querySelectorAll(".producto-row");
+        filas.forEach(fila => {
+            const idInput = fila.querySelector(".producto-id");
+            const cantidadInput = fila.querySelector(".producto-cantidad");
+            const pId = idInput ? idInput.value.trim() : "";
+
+            if (pId) {
+                const prod = productos.find(p => String(p.id) === String(pId));
+                if (prod) {
+                    const stockDisp = convertirNumero(prod.stock);
+                    fila.dataset.stock = stockDisp;
+                    fila.dataset.productoId = prod.id;
+                    if (cantidadInput) {
+                        cantidadInput.max = Math.floor(stockDisp);
+                    }
+                    let stockInfo = fila.querySelector(".stock-disponible");
+                    if (!stockInfo && cantidadInput && cantidadInput.parentElement) {
+                        stockInfo = document.createElement("small");
+                        stockInfo.className = "stock-disponible";
+                        cantidadInput.parentElement.appendChild(stockInfo);
+                    }
+                    if (stockInfo) {
+                        stockInfo.textContent = `Disponible: ${stockDisp}`;
+                    }
+                }
+            }
+        });
+        actualizarDisponibilidadStock();
+    }
+
+    inicializarFilasExistentes();
+
+    /* =====================================================
        CÁLCULO INICIAL
     ===================================================== */
 

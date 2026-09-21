@@ -1,441 +1,272 @@
 /* =========================================================
-   SIGMAFER - LISTADO DE USUARIOS
+   SIGMAFER - LISTADO DE USUARIOS (TEMA UNIFICADO)
    ========================================================= */
 
+/* BOTÓN NUEVO USUARIO */
+.btn-new {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    transition: 0.2s ease;
+}
+
+.btn-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.45);
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.btn-new:active {
+    transform: scale(0.97);
+}
+
+.btn-new i {
+    font-size: 13px;
+}
+
+/* CONTENEDOR PRINCIPAL */
 .module-card {
     width: 100%;
-    margin: 0;
-
-    background: #121625;
-
-    border: 1px solid #252b3d;
-    border-radius: 16px;
-
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 18px;
     overflow: hidden;
-
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     color: #f1f3f8;
 }
 
-
-/* =========================================================
-   HEADER
-   ========================================================= */
-
+/* HEADER */
 .module-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    height: 80px;
-    padding: 0 20px;
-
-    background: #151a2c;
-
-    border-bottom: 1px solid #252b3d;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .module-header h2 {
     margin: 0;
-
-    color: #f5f6fa;
-
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 600;
+    color: #ffffff;
 }
-
-
-/* =========================================================
-   BOTÓN CERRAR
-   ========================================================= */
 
 .window-actions {
     display: flex;
-    align-items: center;
+    gap: 8px;
 }
 
+/* BOTÓN CERRAR */
 .btn-close-pro {
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    width: 42px;
-    height: 42px;
-
-    background: #252a3b;
-
-    color: #f07b72;
-
     border-radius: 10px;
-
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    color: #f87171;
     text-decoration: none;
-
     transition: all 0.2s ease;
 }
 
 .btn-close-pro:hover {
-    background: #303649;
-
-    color: #ff8a80;
-
-    transform: translateY(-1px);
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
 }
 
-.btn-close-pro i {
-    font-size: 17px;
-}
-
-
-/* =========================================================
-   CONTROLES
-   ========================================================= */
-
+/* CONTROLES */
 .controls {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-
-    min-height: 90px;
-
-    padding: 20px;
-
-    background: #121625;
-
-    border-bottom: 1px solid #1f2536;
+    gap: 15px;
+    padding: 20px 24px;
+    flex-wrap: wrap;
 }
 
-
-/* =========================================================
-   BOTÓN NUEVO USUARIO
-   ========================================================= */
-
-.btn-new {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    height: 47px;
-
-    padding: 0 20px;
-
-    background: linear-gradient(
-        135deg,
-        #5065e8,
-        #3f55d6
-    );
-
-    color: #ffffff;
-
+/* BUSCADOR */
+.search {
+    width: 320px;
+    height: 42px;
+    padding: 0 15px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 10px;
-
-    text-decoration: none;
-
-    font-size: 15px;
-    font-weight: 600;
-
-    box-shadow:
-        0 5px 15px rgba(63, 85, 214, 0.20);
-
-    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.06);
+    color: inherit;
+    outline: none;
+    transition: 0.2s ease;
 }
 
-.btn-new:hover {
-    background: linear-gradient(
-        135deg,
-        #5b70f0,
-        #465ce0
-    );
-
-    transform: translateY(-1px);
-
-    box-shadow:
-        0 7px 18px rgba(63, 85, 214, 0.30);
+.search:focus {
+    border-color: rgba(255, 255, 255, 0.30);
+    background: rgba(255, 255, 255, 0.09);
 }
 
+.search::placeholder {
+    opacity: 0.6;
+    color: #94a3b8;
+}
 
-/* =========================================================
-   ENCABEZADO TABLA
-   ========================================================= */
-
-.table-header {
-    display: grid;
-
-    grid-template-columns:
-        70px
-        1.5fr
-        1.3fr
-        1.7fr
-        1.1fr
-        1fr
-        100px
-        100px;
-
+/* FILTROS */
+.filters {
+    display: flex;
     align-items: center;
-
-    min-height: 50px;
-
-    padding: 0 20px;
-
-    background: #151a2c;
-
-    border-bottom: 1px solid #282e41;
-
-    color: #9da4b8;
-
-    font-size: 13px;
-    font-weight: 600;
+    gap: 10px;
+    margin-left: auto;
 }
 
-
-/* =========================================================
-   CUERPO TABLA
-   ========================================================= */
-
-.table-body {
-    width: 100%;
-
-    background: #121625;
+.filters select {
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: inherit;
+    outline: none;
+    cursor: pointer;
 }
 
+.filters select:focus {
+    border-color: rgba(255, 255, 255, 0.30);
+}
+
+.filters option {
+    background: #1c1c1c;
+    color: white;
+}
+
+/* TABLA HEADER & ROW (8 COLUMNAS) */
+.table-header,
 .row {
     display: grid;
-
     grid-template-columns:
-        70px
+        45px
         1.5fr
-        1.3fr
-        1.7fr
-        1.1fr
-        1fr
-        100px
-        100px;
-
+        120px
+        1.6fr
+        110px
+        120px
+        85px
+        60px;
     align-items: center;
+    column-gap: 12px;
+}
 
-    min-height: 55px;
+.row span,
+.row strong,
+.table-header span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-    padding: 0 20px;
+/* ENCABEZADO DE TABLA */
+.table-header {
+    padding: 14px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.6;
+    color: #94a3b8;
+}
 
-    background: #121625;
+/* CUERPO DE TABLA */
+.table-body {
+    width: 100%;
+}
 
-    border-bottom: 1px solid #1f2536;
-
-    color: #d9dce5;
-
+/* FILAS */
+.row {
+    min-height: 62px;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     font-size: 14px;
-
     transition: background 0.2s ease;
 }
 
 .row:hover {
-    background: #171c2d;
+    background: rgba(255, 255, 255, 0.03);
 }
 
-
-/* =========================================================
-   CELDAS
-   ========================================================= */
-
-.row > span {
-    min-width: 0;
-
-    padding-right: 12px;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-    white-space: nowrap;
+.row:last-child {
+    border-bottom: none;
 }
 
-
-/* Número */
-
-.row > span:first-child {
-    color: #777f95;
-}
-
-
-/* =========================================================
-   ESTADOS
-   ========================================================= */
-
-.row .activo,
-.row .inactivo {
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    width: fit-content;
-
-    min-width: 65px;
-
-    padding: 5px 10px;
-
-    border-radius: 7px;
-
-    font-size: 12px;
-    font-weight: 600;
-}
-
-
-/* Activo */
-
-.row .activo {
-    background: rgba(52, 211, 153, 0.12);
-
-    color: #4ade80;
-
-    border: 1px solid rgba(74, 222, 128, 0.15);
-}
-
-
-/* Inactivo */
-
-.row .inactivo {
-    background: rgba(248, 113, 113, 0.10);
-
-    color: #f87171;
-
-    border: 1px solid rgba(248, 113, 113, 0.15);
-}
-
-
-/* =========================================================
-   ACCIONES
-   ========================================================= */
-
+/* ACCIONES */
 .actions {
     display: flex;
-
     align-items: center;
     justify-content: center;
+    gap: 8px;
 }
 
 .btn-action {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
     width: 34px;
     height: 34px;
-
-    background: #20263a;
-
-    color: #7f91ff;
-
-    border: 1px solid #2b3248;
-
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
     border-radius: 8px;
-
+    background: rgba(255, 255, 255, 0.07);
+    color: inherit;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s ease;
     text-decoration: none;
-
-    font-size: 16px;
-
-    transition: all 0.2s ease;
 }
 
-.btn-action:hover {
-    background: #29304a;
-
-    color: #9aa7ff;
-
-    border-color: #3b4670;
-
+.btn-action:hover,
+.btn-action.edit:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
-
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-
-@media (max-width: 1100px) {
-
-    .table-header,
-    .row {
-        grid-template-columns:
-            55px
-            1.5fr
-            1.2fr
-            1.5fr
-            100px
-            90px
-            80px;
-    }
-
-    /* Ocultar teléfono */
-    .table-header span:nth-child(5),
-    .row span:nth-child(5) {
-        display: none;
-    }
+/* ESTADOS */
+.activo {
+    color: #22c55e;
+    font-weight: 600;
 }
 
-
-@media (max-width: 800px) {
-
-    .module-header {
-        height: 70px;
-    }
-
-    .module-header h2 {
-        font-size: 20px;
-    }
-
-    .table-header,
-    .row {
-        grid-template-columns:
-            45px
-            1.5fr
-            1.2fr
-            90px
-            70px;
-    }
-
-    /* Ocultar identificación */
-    .table-header span:nth-child(3),
-    .row span:nth-child(3) {
-        display: none;
-    }
-
-    /* Ocultar teléfono */
-    .table-header span:nth-child(5),
-    .row span:nth-child(5) {
-        display: none;
-    }
+.inactivo {
+    color: #94a3b8;
+    font-weight: 600;
 }
 
+/* EMPTY ROW */
+.empty-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: #94a3b8;
+    padding: 35px 20px;
+    font-size: 14px;
+}
 
-@media (max-width: 600px) {
-
-    .module-header {
-        padding: 0 15px;
-    }
-
-    .controls {
-        padding: 15px;
-    }
-
+/* RESPONSIVE */
+@media (max-width: 1000px) {
     .table-header,
     .row {
-        padding-left: 12px;
-        padding-right: 12px;
+        min-width: 900px;
     }
-
-    .table-header {
-        font-size: 11px;
-    }
-
-    .row {
-        font-size: 13px;
-    }
-
-    .btn-new {
-        width: 100%;
-    }
-
-    .controls {
-        justify-content: stretch;
+    .table-body {
+        overflow-x: auto;
     }
 }

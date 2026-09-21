@@ -1,7 +1,40 @@
 /* =========================================================
-   CONTENEDOR PRINCIPAL
+   SIGMAFER - LISTADO DE CLIENTES (TEMA UNIFICADO)
    ========================================================= */
 
+/* BOTÓN NUEVO CLIENTE */
+.btn-new {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    transition: 0.2s ease;
+}
+
+.btn-new:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.45);
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.btn-new:active {
+    transform: scale(0.97);
+}
+
+.btn-new i {
+    font-size: 13px;
+}
+
+/* CONTENEDOR PRINCIPAL */
 .module-card {
     width: 100%;
     background: rgba(255, 255, 255, 0.05);
@@ -9,20 +42,16 @@
     border-radius: 18px;
     overflow: hidden;
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #f1f3f8;
 }
 
-
-/* =========================================================
-   HEADER
-   ========================================================= */
-
+/* HEADER */
 .module-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     padding: 18px 24px;
-
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -30,123 +59,83 @@
     margin: 0;
     font-size: 22px;
     font-weight: 600;
+    color: #ffffff;
 }
 
+.window-actions {
+    display: flex;
+    gap: 8px;
+}
 
-/* =========================================================
-   CONTROLES
-   ========================================================= */
+/* BOTÓN CERRAR */
+.btn-close-pro {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    color: #f87171;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
 
+.btn-close-pro:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+}
+
+/* CONTROLES */
 .controls {
     display: flex;
     align-items: center;
     gap: 15px;
-
     padding: 20px 24px;
-
     flex-wrap: wrap;
 }
 
-
 /* BUSCADOR */
-
 .search {
-    width: 280px;
+    width: 340px;
     height: 42px;
-
     padding: 0 15px;
-
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 10px;
-
     background: rgba(255, 255, 255, 0.06);
-
     color: inherit;
     outline: none;
-
     transition: 0.2s ease;
 }
 
 .search:focus {
     border-color: rgba(255, 255, 255, 0.30);
+    background: rgba(255, 255, 255, 0.09);
 }
 
 .search::placeholder {
     opacity: 0.6;
+    color: #94a3b8;
 }
 
-
-/* =========================================================
-   BOTÓN NUEVO CLIENTE
-   ========================================================= */
-
-.btn-new {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    height: 42px;
-
-    padding: 0 18px;
-
-    border-radius: 10px;
-
-    text-decoration: none;
-
-    font-size: 14px;
-    font-weight: 600;
-
-    background: rgba(255, 255, 255, 0.10);
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: inherit;
-
-    transition: 0.2s ease;
-}
-
-/* HOVER */
-.btn-new:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(4, 132, 237, 0.963);
-    text-decoration: none;
-}
-
-/* ACTIVE (cuando haces click) */
-.btn-new:active {
-    transform: scale(0.97);
-}
-
-/* OPCIONAL: ICONO */
-.btn-new i {
-    font-size: 13px;
-}
-
-
-/* =========================================================
-   FILTROS
-   ========================================================= */
-
+/* FILTROS */
 .filters {
     display: flex;
     align-items: center;
     gap: 10px;
-
     margin-left: auto;
 }
 
 .filters select {
     height: 42px;
-
     padding: 0 12px;
-
     border-radius: 10px;
-
     border: 1px solid rgba(255, 255, 255, 0.12);
-
     background: rgba(255, 255, 255, 0.06);
     color: inherit;
-
     outline: none;
-
     cursor: pointer;
 }
 
@@ -159,239 +148,127 @@
     color: white;
 }
 
-
-/* =========================================================
-   ENCABEZADO DE TABLA
-   ========================================================= */
-
+/* TABLA HEADER & ROW (10 COLUMNAS) */
 .table-header,
 .row {
     display: grid;
-
     grid-template-columns:
-        50px
-        85px
-        130px
+        45px
         1.3fr
-        1.1fr
+        1.3fr
+        75px
         110px
-        1.3fr
-        1.2fr
-        95px
-        75px;
-
+        110px
+        1.5fr
+        1.4fr
+        85px
+        60px;
     align-items: center;
-
     column-gap: 12px;
 }
 
 .row span,
+.row strong,
 .table-header span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-
-/* HEADER */
-
+/* ENCABEZADO DE TABLA */
 .table-header {
     padding: 14px 24px;
-
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
     font-size: 12px;
     font-weight: 600;
-
     opacity: 0.6;
+    color: #94a3b8;
 }
 
-
-/* =========================================================
-   FILAS
-   ========================================================= */
-
+/* CUERPO DE TABLA */
 .table-body {
     width: 100%;
 }
 
+/* FILAS */
 .row {
     min-height: 62px;
-
     padding: 0 24px;
-
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-
     font-size: 14px;
-
     transition: background 0.2s ease;
 }
 
 .row:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .row:last-child {
     border-bottom: none;
 }
 
-
-/* =========================================================
-   ESTADOS (ACTIVO / INACTIVO)
-   ========================================================= */
-
-.row .activo,
-.row .inactivo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    width: fit-content;
-    min-width: 65px;
-
-    padding: 4px 10px;
-
-    border-radius: 7px;
-
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.row .activo {
-    background: rgba(52, 211, 153, 0.12);
-    color: #4ade80;
-    border: 1px solid rgba(74, 222, 128, 0.15);
-}
-
-.row .inactivo {
-    background: rgba(248, 113, 113, 0.10);
-    color: #f87171;
-    border: 1px solid rgba(248, 113, 113, 0.15);
-}
-
-.empty-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 14px;
-    gap: 8px;
-}
-
-
-
-/* =========================================================
-   ACCIONES
-   ========================================================= */
-
+/* ACCIONES */
 .actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-
+    justify-content: center;
     gap: 8px;
 }
-
-
-/* Botones */
 
 .btn-action {
     width: 34px;
     height: 34px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border: none;
     border-radius: 8px;
-
     background: rgba(255, 255, 255, 0.07);
-
     color: inherit;
-
-    font-size: 16px;
-
+    font-size: 15px;
     cursor: pointer;
-
     transition: 0.2s ease;
-
     text-decoration: none;
 }
 
-
-/* Ver */
-
-.btn-action.view:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
-}
-
-
-/* Editar */
-
+.btn-action:hover,
 .btn-action.edit:hover {
-    background: rgba(5, 152, 238, 0.913);
     background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
+/* ESTADOS */
+.activo {
+    color: #22c55e;
+    font-weight: 600;
+}
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
+.inactivo {
+    color: #94a3b8;
+    font-weight: 600;
+}
 
+/* EMPTY ROW */
+.empty-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: #94a3b8;
+    padding: 35px 20px;
+    font-size: 14px;
+}
+
+/* RESPONSIVE */
 @media (max-width: 1100px) {
-
-    .filters {
-        margin-left: 0;
-    }
-
     .table-header,
     .row {
-        grid-template-columns:
-            0.8fr
-            1fr
-            1.4fr
-            1.2fr
-            1fr
-            1.5fr
-            0.8fr;
+        min-width: 1050px;
     }
-}
-
-
-@media (max-width: 850px) {
-
-    .controls {
-        align-items: stretch;
-    }
-
-    .search {
-        width: 100%;
-    }
-
-    .btn-new {
-        width: fit-content;
-    }
-
-    .filters {
-        width: 100%;
-    }
-
-    .filters select {
-        flex: 1;
-    }
-
-    .module-card {
+    .table-body {
         overflow-x: auto;
-    }
-
-    .table-header,
-    .row {
-        min-width: 900px;
     }
 }

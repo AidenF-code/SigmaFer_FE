@@ -1,16 +1,11 @@
 {% extends 'facturacion/base_facturacion.html' %}
 
-{% block title %}Lista métodos de pago{% endblock %}
+{% block title %}Lista métodos de pago - SigmaFer{% endblock %}
 
 {% block extra_css %}
-<link
-    rel="stylesheet"
-    href="{{ url_for(
-        'static',
-        filename='estyles/facturacion/lista_metodos_pago.css'
-    ) }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/facturacion/lista_metodos_pago.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 {% endblock %}
-
 
 {% block content %}
 
@@ -18,131 +13,126 @@
 
     <!-- HEADER -->
     <div class="module-header">
-
-        <h2>Métodos de pago</h2>
+        <h2>Métodos de Pago</h2>
 
         <div class="window-actions">
-
-            <a
-                href="{{ url_for('facturacion.inicio') }}"
-                class="btn-close-pro">
-
+            <a href="{{ url_for('facturacion.inicio') }}" class="btn-close-pro" title="Volver al menú">
                 <i class="fa-solid fa-xmark"></i>
-
             </a>
-
         </div>
-
     </div>
-
 
     <!-- CONTROLES -->
     <div class="controls">
+        <input 
+            type="text" 
+            id="input-busqueda-metodos" 
+            class="search" 
+            placeholder="Buscar método de pago..." 
+            autocomplete="off"
+            style="max-width: 320px;"
+        >
 
-        <a
-            href="{{ url_for('facturacion.crear_metodos_pago') }}"
-            class="btn-new">
-
+        <a href="{{ url_for('facturacion.crear_metodos_pago') }}" class="btn-new">
             + Nuevo método de pago
-
         </a>
 
-
         <div class="filters">
-
-            <select>
-
-                <option>
-                    Estado
-                </option>
-
-                <option value="activo">
-                    Activo
-                </option>
-
-                <option value="inactivo">
-                    Inactivo
-                </option>
-
+            <select id="filtro-estado-metodos">
+                <option value="">Todos los estados</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
             </select>
-
         </div>
-
     </div>
-
 
     <!-- TABLA -->
     <div class="table-header">
-
         <span>No.</span>
         <span>Nombre</span>
         <span>Estado</span>
-        <span>Acciones</span>
-
+        <span style="text-align: center;">Acciones</span>
     </div>
 
-
-    <div class="table-body">
+    <div class="table-body" id="tabla-metodos-body">
 
         {% for metodo in metodos %}
+        <div class="row fila-metodo"
+             data-nombre="{{ (metodo.nombre or '') | lower }}"
+             data-estado="{{ 'activo' if metodo.estado else 'inactivo' }}">
 
-        <div class="row">
+            <span>{{ loop.index }}</span>
+            <strong style="color: #ffffff;">{{ metodo.nombre }}</strong>
 
-            <span>
-                {{ loop.index }}
-            </span>
+            <div>
+                <span class="{{ 'activo' if metodo.estado else 'inactivo' }}" style="padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                    {{ 'Activo' if metodo.estado else 'Inactivo' }}
+                </span>
+            </div>
 
-
-            <span>
-                {{ metodo.nombre }}
-            </span>
-
-
-            <span>
-
-                {% if metodo.estado %}
-                    Activo
-                {% else %}
-                    Inactivo
-                {% endif %}
-
-            </span>
-
-
-            <div class="actions">
-
-                <a
-                    class="btn-action edit"
-                    href="{{ url_for(
-                        'facturacion.crear_metodos_pago',
-                        id=metodo.id
-                    ) }}"
-                    title="Editar método de pago">
-
+            <div class="actions" style="display: flex; justify-content: center;">
+                <a class="btn-action edit"
+                   href="{{ url_for('facturacion.crear_metodos_pago', id=metodo.id) }}"
+                   title="Editar método de pago">
                     <i class="fa-solid fa-pen"></i>
-
                 </a>
-
             </div>
 
         </div>
-
         {% else %}
-
         <div class="empty-row">
-
             <i class="fa-solid fa-credit-card"></i>
-
-            <span>
-                No hay métodos de pago registrados.
-            </span>
-
+            <span>No hay métodos de pago registrados.</span>
         </div>
-
         {% endfor %}
+
+        <div id="sin-resultados-metodos" class="empty-row" style="display: none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>No se encontraron métodos de pago que coincidan.</span>
+        </div>
 
     </div>
 
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-metodos"></div>
+
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("input-busqueda-metodos");
+    const filtroEstado = document.getElementById("filtro-estado-metodos");
+
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-metodos",
+        rowsSelector: "#tabla-metodos-body .fila-metodo",
+        noResultsId: "sin-resultados-metodos",
+        itemsPerPageDefault: 10,
+        filterCallback: (row) => {
+            const query = (searchInput?.value || "").trim().toLowerCase();
+            const estado = (filtroEstado?.value || "").trim().toLowerCase();
+
+            const nombre = row.getAttribute("data-nombre") || "";
+            const rowEstado = row.getAttribute("data-estado") || "";
+
+            const coincideTexto = !query || nombre.includes(query);
+            const coincideEstado = !estado || rowEstado === estado;
+
+            return coincideTexto && coincideEstado;
+        }
+    });
+
+    const triggerUpdate = () => {
+        paginador.currentPage = 1;
+        paginador.actualizar();
+    };
+
+    if (searchInput) searchInput.addEventListener("input", triggerUpdate);
+    if (filtroEstado) filtroEstado.addEventListener("change", triggerUpdate);
+});
+</script>
 {% endblock %}

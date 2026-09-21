@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -109,30 +110,34 @@
         </div>
         
     </div>
+
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-productos"></div>
     
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const inputBusqueda = document.getElementById("input-busqueda-producto");
     const filtroEstado = document.getElementById("filtro-estado");
     const filtroProveedor = document.getElementById("filtro-proveedor");
     const filtroCategoria = document.getElementById("filtro-categoria");
-    const filas = document.querySelectorAll(".fila-producto");
-    const sinResultados = document.getElementById("sin-resultados");
 
-    function filtrarProductos() {
-        const texto = inputBusqueda.value.trim().toLowerCase();
-        const estado = filtroEstado.value.trim().toLowerCase();
-        const proveedor = filtroProveedor.value.trim().toLowerCase();
-        const categoria = filtroCategoria.value.trim().toLowerCase();
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-productos",
+        rowsSelector: "#tabla-productos-body .fila-producto",
+        noResultsId: "sin-resultados",
+        itemsPerPageDefault: 10,
+        filterCallback: (fila) => {
+            const texto = (inputBusqueda?.value || "").trim().toLowerCase();
+            const estado = (filtroEstado?.value || "").trim().toLowerCase();
+            const proveedor = (filtroProveedor?.value || "").trim().toLowerCase();
+            const categoria = (filtroCategoria?.value || "").trim().toLowerCase();
 
-        let visibles = 0;
-
-        filas.forEach(fila => {
             const nombre = fila.getAttribute("data-nombre") || "";
             const codigo = fila.getAttribute("data-codigo") || "";
             const fEstado = fila.getAttribute("data-estado") || "";
@@ -144,23 +149,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const coincideProveedor = !proveedor || fProveedor.includes(proveedor);
             const coincideCategoria = !categoria || fCategoria.includes(categoria);
 
-            if (coincideTexto && coincideEstado && coincideProveedor && coincideCategoria) {
-                fila.style.display = "grid";
-                visibles++;
-            } else {
-                fila.style.display = "none";
-            }
-        });
-
-        if (sinResultados) {
-            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+            return coincideTexto && coincideEstado && coincideProveedor && coincideCategoria;
         }
-    }
+    });
 
-    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarProductos);
-    if (filtroEstado) filtroEstado.addEventListener("change", filtrarProductos);
-    if (filtroProveedor) filtroProveedor.addEventListener("change", filtrarProductos);
-    if (filtroCategoria) filtroCategoria.addEventListener("change", filtrarProductos);
+    const triggerUpdate = () => {
+        paginador.currentPage = 1;
+        paginador.actualizar();
+    };
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", triggerUpdate);
+    if (filtroEstado) filtroEstado.addEventListener("change", triggerUpdate);
+    if (filtroProveedor) filtroProveedor.addEventListener("change", triggerUpdate);
+    if (filtroCategoria) filtroCategoria.addEventListener("change", triggerUpdate);
 });
 </script>
 {% endblock %}

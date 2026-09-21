@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 <style>
 .table-header.entradas-grid,
 .row.entradas-grid {
@@ -153,25 +154,29 @@
 
     </div>
 
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-entradas"></div>
+
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const inputBusqueda = document.getElementById("input-busqueda-entradas");
     const filtroTipo = document.getElementById("filtro-tipo-entrada");
-    const filas = document.querySelectorAll(".fila-entrada");
-    const sinResultados = document.getElementById("sin-resultados-entradas");
 
-    function filtrarEntradas() {
-        const texto = inputBusqueda.value.trim().toLowerCase();
-        const tipo = filtroTipo.value.trim().toLowerCase();
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-entradas",
+        rowsSelector: "#tabla-entradas-body .fila-entrada",
+        noResultsId: "sin-resultados-entradas",
+        itemsPerPageDefault: 10,
+        filterCallback: (fila) => {
+            const texto = (inputBusqueda?.value || "").trim().toLowerCase();
+            const tipo = (filtroTipo?.value || "").trim().toLowerCase();
 
-        let visibles = 0;
-
-        filas.forEach(fila => {
             const doc = fila.getAttribute("data-doc") || "";
             const prov = fila.getAttribute("data-proveedor") || "";
             const obs = fila.getAttribute("data-obs") || "";
@@ -186,21 +191,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 coincideTipo = fTipo.includes("ajuste") || doc.includes("en-");
             }
 
-            if (coincideTexto && coincideTipo) {
-                fila.style.display = "grid";
-                visibles++;
-            } else {
-                fila.style.display = "none";
-            }
-        });
-
-        if (sinResultados) {
-            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+            return coincideTexto && coincideTipo;
         }
-    }
+    });
 
-    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarEntradas);
-    if (filtroTipo) filtroTipo.addEventListener("change", filtrarEntradas);
+    const triggerUpdate = () => {
+        paginador.currentPage = 1;
+        paginador.actualizar();
+    };
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", triggerUpdate);
+    if (filtroTipo) filtroTipo.addEventListener("change", triggerUpdate);
 });
 </script>
 {% endblock %}

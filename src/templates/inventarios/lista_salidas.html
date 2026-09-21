@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_productos.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 <style>
 .table-header.salidas-grid,
 .row.salidas-grid {
@@ -97,42 +98,40 @@
 
     </div>
 
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-salidas"></div>
+
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const inputBusqueda = document.getElementById("input-busqueda-salidas");
-    const filas = document.querySelectorAll(".fila-salida");
-    const sinResultados = document.getElementById("sin-resultados-salidas");
 
-    function filtrarSalidas() {
-        const texto = inputBusqueda.value.trim().toLowerCase();
-        let visibles = 0;
-
-        filas.forEach(fila => {
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-salidas",
+        rowsSelector: "#tabla-salidas-body .fila-salida",
+        noResultsId: "sin-resultados-salidas",
+        itemsPerPageDefault: 10,
+        filterCallback: (fila) => {
+            const texto = (inputBusqueda?.value || "").trim().toLowerCase();
             const doc = fila.getAttribute("data-doc") || "";
             const obs = fila.getAttribute("data-obs") || "";
             const user = fila.getAttribute("data-user") || "";
 
-            const coincide = !texto || doc.includes(texto) || obs.includes(texto) || user.includes(texto);
-
-            if (coincide) {
-                fila.style.display = "grid";
-                visibles++;
-            } else {
-                fila.style.display = "none";
-            }
-        });
-
-        if (sinResultados) {
-            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+            return !texto || doc.includes(texto) || obs.includes(texto) || user.includes(texto);
         }
-    }
+    });
 
-    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarSalidas);
+    if (inputBusqueda) {
+        inputBusqueda.addEventListener("input", () => {
+            paginador.currentPage = 1;
+            paginador.actualizar();
+        });
+    }
 });
 </script>
 {% endblock %}

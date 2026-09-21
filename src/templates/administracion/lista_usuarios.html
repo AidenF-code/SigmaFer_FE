@@ -1,9 +1,10 @@
 {% extends 'administracion/base_administracion.html' %}
 
-{% block title %}Lista De Usuario{% endblock %}
+{% block title %}Lista de Usuarios - SigmaFer{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/lista_usuarios.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -12,66 +13,144 @@
 
     <!-- HEADER -->
     <div class="module-header">
-
         <h2>Usuarios del Sistema</h2>
 
         <div class="window-actions">
-
-            <a href="{{ url_for('administracion.inicio') }}" class="btn-close-pro">
+            <a href="{{ url_for('administracion.inicio') }}" class="btn-close-pro" title="Volver al menú">
                 <i class="fa-solid fa-xmark"></i>
             </a>
-            
         </div>
-
     </div>
 
     <!-- CONTROLES -->
     <div class="controls">
-
-        <a 
-            href="{{ url_for('administracion.crear_usuario') }}"
-            class="btn-new"
+        <input 
+            type="text" 
+            id="input-busqueda-usuarios" 
+            class="search" 
+            placeholder="Buscar por nombre, correo, identificación o rol..." 
+            autocomplete="off"
+            style="max-width: 380px;"
         >
-            + Nuevo Usuario
+
+        <a href="{{ url_for('administracion.crear_usuario') }}" class="btn-new">
+            <i class="fa-solid fa-user-plus"></i> Nuevo Usuario
         </a>
 
+        <div class="filters">
+            <select id="filtro-estado-usuarios">
+                <option value="">Todos los estados</option>
+                <option value="activo">Activo</option>
+                <option value="inactivo">Inactivo</option>
+            </select>
+        </div>
     </div>
 
     <!-- TABLA -->
     <div class="table-header">
         <span>No.</span>
         <span>Nombre</span>
-        <span>Identificacion</span>
+        <span>Identificación</span>
         <span>Correo</span>
-        <span>Telefono</span>
+        <span>Teléfono</span>
         <span>Rol</span>
         <span>Estado</span>
-        <span>Acciones</span>
+        <span style="text-align: center;">Acciones</span>
     </div>
 
-    <div class="table-body">
+    <div class="table-body" id="tabla-usuarios-body">
 
         {% for usuario in usuarios %}
-        <div class="row">
-            <span>{{ loop.index}}</span>
-            <span>{{ usuario.nombre }}</span>
-            <span> {{ usuario.identificacion}} </span>
-            <span> {{ usuario.correo}} </span>
-            <span> {{ usuario.telefono}} </span>
-            <span> {{ usuario.rol}} </span>
-            <span class="{{ 'activo' if usuario.estado else 'inactivo' }}">
-                            {{ 'Activo' if usuario.estado else 'Inactivo' }}
+        <div class="row fila-usuario"
+             data-nombre="{{ (usuario.nombre or '') | lower }}"
+             data-identificacion="{{ (usuario.identificacion or '') | lower }}"
+             data-correo="{{ (usuario.correo or '') | lower }}"
+             data-rol="{{ (usuario.rol or '') | lower }}"
+             data-estado="{{ 'activo' if usuario.estado else 'inactivo' }}">
+
+            <span>{{ loop.index }}</span>
+            <strong style="color: #ffffff;">{{ usuario.nombre }}</strong>
+            <span style="color: #60a5fa; font-weight: 500;">{{ usuario.identificacion }}</span>
+            <span style="color: #cbd5e1;">{{ usuario.correo }}</span>
+            <span style="color: #94a3b8;">{{ usuario.telefono }}</span>
+            <span>
+                <span class="role-badge" style="background: rgba(96, 165, 250, 0.15); color: #93c5fd; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                    {{ usuario.rol or 'Sin rol' }}
+                </span>
+            </span>
+            <span>
+                <span class="{{ 'activo' if usuario.estado else 'inactivo' }}">
+                    {{ 'Activo' if usuario.estado else 'Inactivo' }}
+                </span>
             </span>
 
-            <div class="actions">
-                <a class="btn-action edit" href="{{ url_for('administracion.editar_usuario', id=usuario.id) }}" title="Editar usuario">✎</a>
+            <div class="actions" style="display: flex; justify-content: center;">
+                <a class="btn-action edit" href="{{ url_for('administracion.editar_usuario', id=usuario.id) }}" title="Editar usuario">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
             </div>
 
         </div>
+        {% else %}
+        <div class="empty-row" style="display: flex; justify-content: center; align-items: center; padding: 35px; color: #94a3b8;">
+            <span>No hay usuarios registrados actualmente.</span>
+        </div>
         {% endfor %}
 
+        <div id="sin-resultados-usuarios" class="empty-row" style="display: none; justify-content: center; align-items: center; padding: 35px; color: #94a3b8;">
+            <span>No se encontraron usuarios que coincidan con la búsqueda.</span>
+        </div>
 
     </div>
 
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-usuarios"></div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("input-busqueda-usuarios");
+    const filtroEstado = document.getElementById("filtro-estado-usuarios");
+
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-usuarios",
+        rowsSelector: "#tabla-usuarios-body .fila-usuario",
+        noResultsId: "sin-resultados-usuarios",
+        itemsPerPageDefault: 10,
+        filterCallback: (row) => {
+            const query = (searchInput?.value || "").trim().toLowerCase();
+            const estado = (filtroEstado?.value || "").trim().toLowerCase();
+
+            const nombre = row.getAttribute("data-nombre") || "";
+            const doc = row.getAttribute("data-identificacion") || "";
+            const correo = row.getAttribute("data-correo") || "";
+            const rol = row.getAttribute("data-rol") || "";
+            const rowEstado = row.getAttribute("data-estado") || "";
+
+            const coincideTexto = !query ||
+                nombre.includes(query) ||
+                doc.includes(query) ||
+                correo.includes(query) ||
+                rol.includes(query);
+
+            const coincideEstado = !estado || rowEstado === estado;
+
+            return coincideTexto && coincideEstado;
+        }
+    });
+
+    const triggerUpdate = () => {
+        paginador.currentPage = 1;
+        paginador.actualizar();
+    };
+
+    if (searchInput) searchInput.addEventListener("input", triggerUpdate);
+    if (filtroEstado) filtroEstado.addEventListener("change", triggerUpdate);
+});
+</script>
 {% endblock %}

@@ -1,48 +1,42 @@
 {% extends 'facturacion/base_facturacion.html' %}
 
-{% block title %}Modulo de facturacion{% endblock %}
+{% block title %}Lista de Clientes - SigmaFer{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/facturacion/lista_clientes.css') }}">
-
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 {% endblock %}
 
 {% block content %}
-
 
 <div class="module-card">
 
     <!-- HEADER -->
     <div class="module-header">
-
         <h2>Clientes</h2>
 
         <div class="window-actions">
-
-            <a href="{{ url_for('facturacion.inicio') }}" class="btn-close-pro">
+            <a href="{{ url_for('facturacion.inicio') }}" class="btn-close-pro" title="Volver al menú">
                 <i class="fa-solid fa-xmark"></i>
             </a>
-            
         </div>
-
     </div>
 
     <!-- CONTROLES -->
     <div class="controls">
-
         <input 
-            type="text"
-            id="search-cliente"
-            class="search"
-            placeholder="Buscar por nombre, razón social, doc o correo..."
-            autocomplete="off">
+            type="text" 
+            id="search-cliente" 
+            class="search" 
+            placeholder="Buscar por nombre, razón social, doc o correo..." 
+            autocomplete="off"
+        >
 
         <a href="{{ url_for('facturacion.crear_clientes') }}" class="btn-new">
-            + Nuevo cliente
+            <i class="fa-solid fa-user-plus"></i> Nuevo cliente
         </a>
 
         <div class="filters">
-
             <!-- Filtro por Estado -->
             <select id="filter-estado">
                 <option value="">Todos los estados</option>
@@ -57,52 +51,61 @@
                 <option value="CE">CE (Extranjería)</option>
                 <option value="NIT">NIT</option>
             </select>
-
         </div>
-
     </div>
 
-    <!-- TABLA -->
+    <!-- TABLA HEADER -->
     <div class="table-header">
         <span>No.</span>
-        <span>Tipo de ID</span>
-        <span>Documento</span>
-        <span>Razón Social</span>
-        <span>Contacto</span>
+        <span>Nombre</span>
+        <span>Razón social</span>
+        <span>Tipo doc</span>
+        <span>Identificación</span>
         <span>Teléfono</span>
+        <span>Correo electrónico</span>
         <span>Dirección</span>
-        <span>Correo</span>
         <span>Estado</span>
-        <span>Acciones</span>
+        <span style="text-align: center;">Acciones</span>
     </div>
 
+    <!-- TABLA BODY -->
     <div class="table-body" id="clientes-tbody">
 
         {% for cliente in clientes %}
-        <div class="row"
+        <div class="row fila-cliente"
              data-nombre="{{ (cliente.nombre or '') | lower }}"
              data-razon="{{ (cliente.razon_social or '') | lower }}"
-             data-identificacion="{{ (cliente.numero_identificacion or '') | lower }}"
-             data-correo="{{ (cliente.correo or '') | lower }}"
-             data-telefono="{{ (cliente.telefono or '') | lower }}"
              data-tipo="{{ (cliente.tipo_documento or '') | upper }}"
+             data-identificacion="{{ (cliente.numero_identificacion or cliente.identificacion or '') | lower }}"
+             data-telefono="{{ (cliente.telefono or '') | lower }}"
+             data-correo="{{ (cliente.correo or '') | lower }}"
              data-estado="{{ 'activo' if cliente.estado else 'inactivo' }}">
+
             <span>{{ loop.index }}</span>
-            <span>{{ cliente.tipo_documento }}</span>
-            <span>{{ cliente.numero_identificacion }}</span>
-            <span>{{ cliente.razon_social }}</span>
-            <span>{{ cliente.nombre }}</span>
-            <span>{{ cliente.telefono }}</span>
-            <span>{{ cliente.direccion }}</span>
-            <span>{{ cliente.correo }}</span>
+            <strong style="color: #ffffff;">{{ cliente.nombre or '-' }}</strong>
+            <span>{{ cliente.razon_social or '-' }}</span>
             <span>
+                <span style="background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                    {{ cliente.tipo_documento or '-' }}
+                </span>
+            </span>
+            <span style="color: #60a5fa; font-family: monospace; font-weight: 600;">
+                {{ cliente.numero_identificacion or cliente.identificacion or '-' }}
+            </span>
+            <span style="color: #cbd5e1;">{{ cliente.telefono or '-' }}</span>
+            <span style="color: #94a3b8;">{{ cliente.correo or '-' }}</span>
+            <span style="color: #cbd5e1;">{{ cliente.direccion or '-' }}</span>
+            
+            <div>
                 <span class="{{ 'activo' if cliente.estado else 'inactivo' }}">
                     {{ 'Activo' if cliente.estado else 'Inactivo' }}
                 </span>
-            </span>
+            </div>
 
             <div class="actions">
-                <a class="btn-action edit" href="{{ url_for('facturacion.editar_cliente', id=cliente.id) }}" title="Editar cliente">✎</a>
+                <a class="btn-action edit" href="{{ url_for('facturacion.editar_cliente', id=cliente.id) }}" title="Editar cliente">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
             </div>
 
         </div>
@@ -121,18 +124,20 @@
 
     </div>
 
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-clientes"></div>
+
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("search-cliente");
     const filterEstado = document.getElementById("filter-estado");
     const filterTipo = document.getElementById("filter-tipo");
-    const rows = document.querySelectorAll("#clientes-tbody .row");
-    const noResults = document.getElementById("no-results");
 
     function normalizar(texto) {
         return (texto || "")
@@ -142,14 +147,16 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/[\u0300-\u036f]/g, "");
     }
 
-    function aplicarFiltros() {
-        const query = normalizar(searchInput.value);
-        const estadoSeleccionado = filterEstado.value.toLowerCase();
-        const tipoSeleccionado = filterTipo.value.toUpperCase();
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-clientes",
+        rowsSelector: "#clientes-tbody .fila-cliente",
+        noResultsId: "no-results",
+        itemsPerPageDefault: 10,
+        filterCallback: (row) => {
+            const query = normalizar(searchInput?.value);
+            const estadoSeleccionado = (filterEstado?.value || "").toLowerCase();
+            const tipoSeleccionado = (filterTipo?.value || "").toUpperCase();
 
-        let coincidencias = 0;
-
-        rows.forEach(row => {
             const nombre = normalizar(row.dataset.nombre);
             const razon = normalizar(row.dataset.razon);
             const doc = normalizar(row.dataset.identificacion);
@@ -172,28 +179,18 @@ document.addEventListener("DOMContentLoaded", () => {
             // Filtro por Tipo de Documento
             const coincideTipo = !tipoSeleccionado || tipo === tipoSeleccionado;
 
-            if (coincideTexto && coincideEstado && coincideTipo) {
-                row.style.display = "grid";
-                coincidencias++;
-            } else {
-                row.style.display = "none";
-            }
-        });
-
-        if (noResults) {
-            noResults.style.display = (rows.length > 0 && coincidencias === 0) ? "flex" : "none";
+            return coincideTexto && coincideEstado && coincideTipo;
         }
-    }
+    });
 
-    if (searchInput) {
-        searchInput.addEventListener("input", aplicarFiltros);
-    }
-    if (filterEstado) {
-        filterEstado.addEventListener("change", aplicarFiltros);
-    }
-    if (filterTipo) {
-        filterTipo.addEventListener("change", aplicarFiltros);
-    }
+    const triggerUpdate = () => {
+        paginador.currentPage = 1;
+        paginador.actualizar();
+    };
+
+    if (searchInput) searchInput.addEventListener("input", triggerUpdate);
+    if (filterEstado) filterEstado.addEventListener("change", triggerUpdate);
+    if (filterTipo) filterTipo.addEventListener("change", triggerUpdate);
 });
 </script>
-{% endblock %}
+{% endblock %}

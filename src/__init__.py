@@ -1,4 +1,4 @@
-from flask import Flask, session
+from flask import Flask, session, request, redirect, url_for, flash
 
 def create_app(config_name = "default"):
     app = Flask(__name__)
@@ -14,14 +14,44 @@ def create_app(config_name = "default"):
     app.register_blueprint(index_bp)
     app.register_blueprint(dashboard_bp)
 
-    #Modulo de inventarios
+    # Modulo de inventarios
     app.register_blueprint(inventarios_bp)
 
-    #Modulo de facturacion
+    # Modulo de facturacion
     app.register_blueprint(facturacion_bp)
 
-    #Modulo de administracion
+    # Modulo de administracion
     app.register_blueprint(administracion_bp)
+
+    # ========================================================
+    # PROTECCIÓN GLOBAL DE RUTAS (REQUIERE INICIO DE SESIÓN)
+    # ========================================================
+    @app.before_request
+    def require_login():
+        # Endpoints y rutas públicas que no requieren autenticación previa
+        public_endpoints = {
+            'static',
+            'index.inicio',
+            'index.logout',
+            'index.cambiar_password_inicial'
+        }
+
+        # Permitir archivos estáticos por ruta
+        if request.path.startswith('/static'):
+            return None
+
+        # Permitir endpoints públicos
+        if request.endpoint in public_endpoints:
+            return None
+
+        # Si el endpoint no existe (dejar que Flask maneje 404)
+        if request.endpoint is None:
+            return None
+
+        # Si no hay token de autenticación ni usuario activo en sesión, bloquear acceso
+        if not session.get('api_token') or not session.get('usuario'):
+            flash('Debes iniciar sesión para acceder a las secciones del sistema.', 'info')
+            return redirect(url_for('index.inicio'))
 
     @app.context_processor
     def inject_global_vars():
@@ -50,4 +80,4 @@ def create_app(config_name = "default"):
             'usuario_actual_nombre': nombre_usuario
         }
 
-    return app
+    return app

@@ -1,0 +1,135 @@
+/* =========================================================
+   SIGMAFER - ESTILOS DE PAGINACIÓN GLASSMORPHISM
+   ========================================================= */
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: #151a2c;
+    border-top: 1px solid #252b3d;
+    color: #9da4b8;
+    font-size: 13px;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+/* IZQUIERDA: SELECTOR DE REGISTROS POR PÁGINA */
+.pagination-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-label {
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pagination-select {
+    height: 36px;
+    padding: 0 12px;
+    background: #20263a;
+    border: 1px solid #2b3248;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.pagination-select:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+.pagination-select option {
+    background: #151a2c;
+    color: #ffffff;
+}
+
+/* CENTRO: INFORMACIÓN DE REGISTROS */
+.pagination-info {
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.pagination-info strong {
+    color: #60a5fa;
+    font-weight: 700;
+}
+
+/* DERECHA: BOTONES DE NAVEGACIÓN */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    background: #20263a;
+    border: 1px solid #2b3248;
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-page:hover:not(:disabled) {
+    background: #29304a;
+    color: #ffffff;
+    border-color: #3b4670;
+    transform: translateY(-1px);
+}
+
+.btn-page.active {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
+}
+
+.btn-page:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none;
+}
+
+.pagination-ellipsis {
+    color: #64748b;
+    padding: 0 4px;
+    font-weight: 700;
+    user-select: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .pagination-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/inventarios/lista_proveedores.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -86,48 +87,47 @@
         </div>
         
     </div>
+
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-proveedores"></div>
     
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const inputBusqueda = document.getElementById("input-busqueda-proveedor");
     const filtroEstado = document.getElementById("filtro-estado-proveedor");
-    const filas = document.querySelectorAll(".fila-proveedor");
-    const sinResultados = document.getElementById("sin-resultados-proveedores");
 
-    function filtrarProveedores() {
-        const textoNombre = inputBusqueda.value.trim().toLowerCase();
-        const estado = filtroEstado ? filtroEstado.value.trim().toLowerCase() : "";
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-proveedores",
+        rowsSelector: "#tabla-proveedores-body .fila-proveedor",
+        noResultsId: "sin-resultados-proveedores",
+        itemsPerPageDefault: 10,
+        filterCallback: (fila) => {
+            const textoNombre = (inputBusqueda?.value || "").trim().toLowerCase();
+            const estado = filtroEstado ? filtroEstado.value.trim().toLowerCase() : "";
 
-        let visibles = 0;
-
-        filas.forEach(fila => {
             const nombre = fila.getAttribute("data-nombre") || "";
             const fEstado = fila.getAttribute("data-estado") || "";
 
-            // Búsqueda estricta SOLO por nombre
             const coincideNombre = !textoNombre || nombre.includes(textoNombre);
             const coincideEstado = !estado || fEstado === estado;
 
-            if (coincideNombre && coincideEstado) {
-                fila.style.display = "grid";
-                visibles++;
-            } else {
-                fila.style.display = "none";
-            }
-        });
-
-        if (sinResultados) {
-            sinResultados.style.display = (visibles === 0 && filas.length > 0) ? "flex" : "none";
+            return coincideNombre && coincideEstado;
         }
-    }
+    });
 
-    if (inputBusqueda) inputBusqueda.addEventListener("input", filtrarProveedores);
-    if (filtroEstado) filtroEstado.addEventListener("change", filtrarProveedores);
+    const triggerUpdate = () => {
+        paginador.currentPage = 1;
+        paginador.actualizar();
+    };
+
+    if (inputBusqueda) inputBusqueda.addEventListener("input", triggerUpdate);
+    if (filtroEstado) filtroEstado.addEventListener("change", triggerUpdate);
 });
 </script>
 {% endblock %}

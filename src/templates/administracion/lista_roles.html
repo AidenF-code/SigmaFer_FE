@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='estyles/administracion/lista_roles.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='estyles/paginacion.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -23,6 +24,15 @@
 
     <!-- CONTROLES -->
     <div class="controls">
+        <input 
+            type="text" 
+            id="input-busqueda-roles" 
+            class="search" 
+            placeholder="Buscar rol por nombre..." 
+            autocomplete="off"
+            style="max-width: 320px;"
+        >
+
         <a href="{{ url_for('administracion.crear_rol') }}" class="btn-new">
             <i class="fa-solid fa-plus"></i> Nuevo Rol
         </a>
@@ -36,10 +46,10 @@
         <span style="text-align: center;">Acciones</span>
     </div>
 
-    <div class="table-body">
+    <div class="table-body" id="tabla-roles-body">
 
         {% for rol in roles %}
-        <div class="row">
+        <div class="row fila-rol" data-nombre="{{ (rol.nombre or '') | lower }}">
             <span>{{ loop.index }}</span>
             <span class="role-name-cell">
                 <i class="fa-solid fa-shield" style="color: #60a5fa; font-size: 13px;"></i>
@@ -84,7 +94,44 @@
         </div>
         {% endfor %}
 
+        <div id="sin-resultados-roles" class="row empty-row" style="display: none;">
+            <span>No se encontraron roles que coincidan con la búsqueda.</span>
+        </div>
+
     </div>
 
+    <!-- CONTENEDOR DE PAGINACIÓN -->
+    <div id="paginacion-roles"></div>
+
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/paginador.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("input-busqueda-roles");
+
+    const paginador = inicializarPaginador({
+        containerId: "paginacion-roles",
+        rowsSelector: "#tabla-roles-body .fila-rol",
+        noResultsId: "sin-resultados-roles",
+        itemsPerPageDefault: 10,
+        filterCallback: (row) => {
+            const query = (searchInput?.value || "").trim().toLowerCase();
+            const nombre = row.getAttribute("data-nombre") || "";
+
+            return !query || nombre.includes(query);
+        }
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            paginador.currentPage = 1;
+            paginador.actualizar();
+        });
+    }
+});
+</script>
 {% endblock %}

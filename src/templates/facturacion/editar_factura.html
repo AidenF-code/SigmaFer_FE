@@ -113,21 +113,24 @@
 
                         <tbody id="tabla-productos">
                             {% for d in detalles %}
-                            <tr class="producto-row">
+                            {% set prod_item = prod_map.get(d.producto_id, {}) if prod_map else {} %}
+                            {% set stock_disp = prod_item.get('stock', d.cantidad) %}
+                            <tr class="producto-row" data-producto-id="{{ d.producto_id }}" data-stock="{{ stock_disp }}">
                                 <td>
-                                    <input type="text" name="codigo[]" class="producto-codigo" value="{{ d.producto_codigo or '' }}" placeholder="Código" autocomplete="off">
+                                    <input type="text" name="codigo[]" class="producto-codigo" value="{{ d.producto_codigo or prod_item.get('codigo', '') }}" placeholder="Código" autocomplete="off">
                                 </td>
 
                                 <td>
                                     <div class="autocomplete-container">
-                                        <input type="text" name="producto_nombre[]" class="producto-nombre" value="{{ d.producto_nombre or '' }}" placeholder="Buscar producto..." autocomplete="off">
+                                        <input type="text" name="producto_nombre[]" class="producto-nombre" value="{{ d.producto_nombre or prod_item.get('nombre', '') }}" placeholder="Buscar producto..." autocomplete="off">
                                         <input type="hidden" name="producto_id[]" class="producto-id" value="{{ d.producto_id }}">
                                         <div class="autocomplete-results productos-resultados"></div>
                                     </div>
                                 </td>
 
                                 <td>
-                                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" step="1" value="{{ d.cantidad }}">
+                                    <input type="number" name="cantidad[]" class="producto-cantidad" min="1" max="{{ stock_disp }}" step="1" value="{{ d.cantidad }}">
+                                    <small class="stock-disponible">Disponible: {{ stock_disp }}</small>
                                 </td>
 
                                 <td>

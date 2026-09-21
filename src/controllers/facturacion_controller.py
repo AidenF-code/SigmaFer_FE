@@ -384,14 +384,32 @@ def editar_factura(id):
 
     # Asegurar producto_nombre y producto_codigo en edición
     prod_map = {p.get('id'): p for p in productos}
+    stock_en_factura = {}
+
     for d in detalles:
         p_id = d.get('producto_id')
+        cant = int(d.get('cantidad', 0))
         if p_id in prod_map:
             if not d.get('producto_nombre'):
                 d['producto_nombre'] = prod_map[p_id].get('nombre', '')
             if not d.get('producto_codigo'):
                 d['producto_codigo'] = prod_map[p_id].get('codigo', '')
+        if p_id:
+            stock_en_factura[p_id] = stock_en_factura.get(p_id, 0) + cant
 
+    # Reintegrar las cantidades de esta factura al stock en memoria
+    # para que en la interfaz de edición se muestre y valide el stock real disponible
+    for p in productos:
+        p_id = p.get('id')
+        if p_id in stock_en_factura:
+            stock_raw = p.get('stock')
+            try:
+                stock_base = int(float(str(stock_raw).strip())) if stock_raw is not None and str(stock_raw).strip() != '' else 0
+            except (ValueError, TypeError):
+                stock_base = 0
+            p['stock'] = stock_base + stock_en_factura[p_id]
+
+    prod_map = {p.get('id'): p for p in productos}
 
     if request.method == 'POST':
         productos_ids = request.form.getlist('producto_id[]')
@@ -456,6 +474,7 @@ def editar_factura(id):
                 factura=factura,
                 detalles=detalles,
                 productos=productos,
+                prod_map=prod_map,
                 error=e.message
             )
 
@@ -463,22 +482,30 @@ def editar_factura(id):
         'facturacion/editar_factura.html',
         factura=factura,
         detalles=detalles,
-        productos=productos
+        productos=productos,
+        prod_map=prod_map
     )
 
 
 # CAMBIAR ESTADO DE FACTURA (PAGADA <-> PENDIENTE)
 @facturacion_bp.route('/cambiar_estado_factura/<int:id>', methods=['POST'])
-
 def cambiar_estado_factura(id):
     estado_pago = request.form.get('estado_pago')
-    nuevo_estado = True if str(estado_pago) in ['1', 'true', 'True'] else False
+    nuevo_estado = True if str(estado_pago).strip().lower() in ['1', 'true', 'pagada'] else False
     try:
-        _client().put(f'/facturas/{id}', json={'estado_pago': nuevo_estado})
-        flash('Estado de factura actualizado con éxito', 'success')
+        _client().put(f'/facturas/{id}/estado_pago', json={'estado_pago': nuevo_estado})
+        flash('Estado de pago actualizado con éxito', 'success')
     except APIError as e:
-        flash(f'Error al cambiar estado: {e.message}', 'error')
-    return redirect(url_for('facturacion.ver_factura', id=id))
+        try:
+            _client().put(f'/facturas/{id}', json={'estado_pago': nuevo_estado})
+            flash('Estado de pago actualizado con éxito', 'success')
+        except APIError as e2:
+            flash(f'Error al cambiar estado: {e2.message}', 'error')
+
+    next_url = request.referrer
+    if not next_url or 'cambiar_estado_factura' in next_url:
+        next_url = url_for('facturacion.ver_factura', id=id)
+    return redirect(next_url)
 
 
 # MARCAR FACTURA COMO PAGADA (COMPATIBILIDAD)
