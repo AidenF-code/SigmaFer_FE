@@ -68,7 +68,7 @@ class APIClient:
 
     def get(self, path, params = None):
         print(path)
-        r = httpx.get(self._url(path), params=params, headers=self.headers, timeout=10)
+        r = httpx.get(self._url(path), params=params, headers=self.headers, timeout=60)
         print(r.text)
         return self._handle(r)
 
@@ -79,7 +79,7 @@ class APIClient:
             self._url(path),
             json=json,
             headers=self.headers,
-            timeout=10
+            timeout=60
         )
 
         print(r.text)
@@ -93,7 +93,7 @@ class APIClient:
             self._url(path),
             json=json,
             headers=self.headers,
-            timeout=10
+            timeout=60
         )
 
         print(r.text)
@@ -106,7 +106,7 @@ class APIClient:
         r = httpx.delete(
             self._url(path),
             headers=self.headers,
-            timeout=10
+            timeout=60
         )
 
         print(r.text)
